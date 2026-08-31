@@ -328,20 +328,22 @@ function updateMobileBar() {
         tt = document.getElementById("mobileCartTotal");
   if (!b) return;
   const n = cartQuantity();
-  const isMenuPage = currentPage === "menu" || document.getElementById("page-menu")?.classList.contains("active");
+  const menuSection = document.getElementById("page-menu");
+  const isMenuPage = currentPage === "menu" && menuSection && menuSection.classList.contains("active");
+  
   if (n > 0 && isMenuPage) {
-    const wasHidden = b.style.display === "none" || !b.classList.contains("bar-visible");
+    const wasHidden = !b.classList.contains("bar-visible");
+    b.classList.add("bar-visible");
     b.style.display = "flex";
     if (wasHidden && !reduceMotion) {
       b.classList.add("bar-entering");
       setTimeout(() => b.classList.remove("bar-entering"), 450);
     }
-    b.classList.add("bar-visible");
     if (tx) tx.textContent = n + " item" + (n > 1 ? "s" : "");
     if (tt) tt.textContent = money(cartTotal());
   } else {
-    b.style.display = "none";
     b.classList.remove("bar-visible");
+    b.style.display = "none";
   }
 }
 document.getElementById("mobileCartBar")?.addEventListener("click", openCart);

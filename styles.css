@@ -1585,7 +1585,7 @@ textarea { resize: vertical; }
     min-width: 18px !important;
   }
   
-  /* Mobile Sticky Bottom Cart Bar */
+  /* Mobile Sticky Bottom Cart Bar - Hidden by default, displayed via .bar-visible only on menu page */
   .mobile-cart-bar {
     position: fixed;
     left: 10px;
@@ -1595,7 +1595,7 @@ textarea { resize: vertical; }
     max-width: 480px;
     margin: 0 auto;
     z-index: 60;
-    display: flex !important;
+    display: none;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
@@ -1607,7 +1607,10 @@ textarea { resize: vertical; }
     border: 1px solid rgba(255, 255, 255, 0.16);
     box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
   }
-  #mobileCartBar[style*="display: none"] {
+  .mobile-cart-bar.bar-visible {
+    display: flex !important;
+  }
+  .mobile-cart-bar:not(.bar-visible) {
     display: none !important;
   }
   
