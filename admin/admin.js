@@ -2,7 +2,8 @@ const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAl
 let menuItems = [], orders = [];
 let autoRefreshInterval = null;
 let eventSource = null;
-const AUTO_REFRESH_SECONDS = 30;
+const AUTO_REFRESH_SECONDS = 3;
+let lastKnownMaxOrderId = 0;
 
 async function api(url, options = {}) {
   const r = await fetch(url, { headers: { "Content-Type": "application/json", ...(options.headers || {}) }, ...options });
@@ -14,16 +15,6 @@ async function api(url, options = {}) {
 function money(n) { return `₹${Number(n)}`; }
 function esc(v) { return String(v ?? "").replace(/[&<>'"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[c])); }
 function toast(t) { const e = $("#adminToast"); e.textContent = t; e.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => e.classList.remove("show"), 2600); }
-
-function playNotificationSound() {
-  if (window.Audio) {
-    try {
-      const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjGH0fPTgjMGHm7A7+OZRA0PVKzn77BdGAg+ltzy0H8pBSh+zPLaizsIGGS57OihUhELTKXh8bllHAU2jdXzzn4qBSh+zPLaizsIGGS57OihUhELTKXh8bllHAU2jdXzzn4qBSV8y/HajDgJFmG56+mjVBEMTqvm8bllHAU2jdXzzn4qBSV8y/HajDgJFmG56+mjVBEMTqvm8bllHAU2jdXzzn4qBSV8y/HajDgJFmG56+mjVBEMTqvm8bllHAU2jdXzzn4qBSV8y/HajDgJFmG56+mjVBEMTqvm8bllHAU2jdXzzn4qBQ==');
-      audio.volume = 0.4;
-      audio.play().catch(() => {});
-    } catch (e) {}
-  }
-}
 
 async function boot() {
   const s = await api("/api/admin/session");
@@ -58,36 +49,29 @@ function initLiveStream() {
       // Auto-refresh interval remains as backup.
     };
   } catch (err) {
-    console.warn("SSE not available, relying on polling fallback", err);
+    console.warn("SSE not available, relying on fast polling", err);
   }
 }
 
 function handleLiveEvent(evt) {
   const type = evt.type;
   const data = evt.data || {};
-  const currentView = [...$$('.nav-btn')].find(x => x.classList.contains('active'))?.dataset.view;
 
   if (type === 'new_order') {
     playNotificationSound();
-    toast(`🔔 New Order ${data.order_code} from ${data.customer_name} (${money(data.total)})`);
+    toast(`🔔 New Order #${data.order_code || ''} from ${data.customer_name || ''} (${money(data.total || 0)})`);
     loadDashboard();
-    if (currentView === 'orders') {
-      loadOrders();
-    }
+    loadOrders();
   } else if (type === 'order_status_updated') {
     loadDashboard();
-    if (currentView === 'orders') {
-      loadOrders();
-    }
+    loadOrders();
   } else if (type === 'settings_updated') {
     if (typeof data.cafe_open === 'boolean') {
       setCafeUI(data.cafe_open);
     }
     loadDashboard();
   } else if (type === 'menu_updated') {
-    if (currentView === 'menu') {
-      loadMenu();
-    }
+    loadMenu();
     loadDashboard();
   }
 }
@@ -95,11 +79,7 @@ function handleLiveEvent(evt) {
 function startAutoRefresh() {
   if (autoRefreshInterval) clearInterval(autoRefreshInterval);
   autoRefreshInterval = setInterval(async () => {
-    const currentView = [...$$('.nav-btn')].find(x => x.classList.contains('active'))?.dataset.view;
-    if (currentView === 'dashboard' || currentView === 'orders') {
-      await loadDashboard();
-      if (currentView === 'orders') await loadOrders();
-    }
+    await Promise.all([loadDashboard(), loadOrders()]);
   }, AUTO_REFRESH_SECONDS * 1000);
 }
 
@@ -412,12 +392,30 @@ $("#orderSearch")?.addEventListener("input", e => {
 });
 
 async function loadOrders() {
-  const d = await api('/api/admin/orders');
-  orders = d.orders;
-  renderOrders();
-  const fresh = orders.filter(x => x.status === 'new').length;
-  if ($("#newBadge")) $("#newBadge").textContent = fresh || '';
-  if ($("#countNew")) $("#countNew").textContent = fresh || '0';
+  try {
+    const d = await api('/api/admin/orders');
+    const newOrders = d.orders || [];
+    
+    if (newOrders.length > 0) {
+      const maxId = Math.max(...newOrders.map(o => o.id || 0));
+      if (lastKnownMaxOrderId > 0 && maxId > lastKnownMaxOrderId) {
+        const freshArrivals = newOrders.filter(o => o.id > lastKnownMaxOrderId);
+        if (freshArrivals.some(o => o.status === 'new')) {
+          playNotificationSound();
+          toast(`🔔 ${freshArrivals.length} new incoming order(s)!`);
+        }
+      }
+      lastKnownMaxOrderId = Math.max(lastKnownMaxOrderId, maxId);
+    }
+
+    orders = newOrders;
+    renderOrders();
+    const fresh = orders.filter(x => x.status === 'new').length;
+    if ($("#newBadge")) $("#newBadge").textContent = fresh || '';
+    if ($("#countNew")) $("#countNew").textContent = fresh || '0';
+  } catch (err) {
+    console.error("Orders load error:", err);
+  }
 }
 
 function renderOrders() {
