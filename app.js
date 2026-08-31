@@ -195,6 +195,29 @@ function availabilityMeta(item) {
   return { label: "", cls: "", showBadge: false, disabled: false };
 }
 
+function renderActionBtn(item, inCart, disabled) {
+  if (inCart && inCart.qty > 0 && !disabled) {
+    return `<div class="card-qty-ctrl">
+              <button type="button" class="qty-btn dec-btn" onclick="changeQty(${item.id}, -1, event)" aria-label="Decrease quantity">−</button>
+              <span class="card-qty-num">${inCart.qty}</span>
+              <button type="button" class="qty-btn inc-btn" onclick="changeQty(${item.id}, 1, event)" aria-label="Increase quantity">+</button>
+            </div>`;
+  }
+  return `<button type="button" class="add-btn menu-add-btn" data-id="${item.id}" onclick="addToCart(${item.id}, event)" ${disabled ? "disabled" : ""} aria-label="Add ${escapeHtml(item.name)} to cart">${disabled ? "Sold" : "+"}</button>`;
+}
+
+function syncCardUI(id) {
+  const item = menu.find(x => x.id === id);
+  if (!item) return;
+  const a = availabilityMeta(item);
+  const disabled = a.disabled || !state.cafeOpen;
+  const inCart = state.cart.find(x => x.id === item.id);
+  const slots = document.querySelectorAll(`.card-action-slot[data-id="${id}"]`);
+  slots.forEach(slot => {
+    slot.innerHTML = renderActionBtn(item, inCart, disabled);
+  });
+}
+
 function renderMenu() {
   const items = filteredMenu();
   if (!items.length) {
@@ -205,14 +228,7 @@ function renderMenu() {
     const a = availabilityMeta(item);
     const disabled = a.disabled || !state.cafeOpen;
     const inCart = state.cart.find(x => x.id === item.id);
-    
-    const actionBtn = (inCart && inCart.qty > 0 && !disabled)
-      ? `<div class="card-qty-ctrl">
-           <button class="qty-btn dec-btn" onclick="changeQty(${item.id}, -1)" aria-label="Decrease quantity">−</button>
-           <span class="card-qty-num">${inCart.qty}</span>
-           <button class="qty-btn inc-btn" onclick="changeQty(${item.id}, 1)" aria-label="Increase quantity">+</button>
-         </div>`
-      : `<button class="add-btn menu-add-btn" data-id="${item.id}" ${disabled ? "disabled" : ""} aria-label="Add ${escapeHtml(item.name)} to cart">${disabled ? "Sold" : "+"}</button>`;
+    const actionBtn = renderActionBtn(item, inCart, disabled);
 
     const isPopular = Boolean(item.is_bestseller);
     const badgeHtml = a.showBadge
@@ -220,7 +236,7 @@ function renderMenu() {
       : (isPopular && state.category !== "🔥 Popular" ? `<span class="bestseller-chip">★ Popular</span>` : (!state.cafeOpen ? `<span class="availability sold">Closed</span>` : ''));
 
     return `
-      <article class="menu-card card-in ${a.disabled ? "soldout" : ""} ${a.cls === "low" ? "low-stock" : ""}" style="animation-delay:${reduceMotion ? 0 : (i % 8) * 25}ms">
+      <article class="menu-card card-in ${a.disabled ? "soldout" : ""} ${a.cls === "low" ? "low-stock" : ""}" data-id="${item.id}" style="animation-delay:${reduceMotion ? 0 : (i % 8) * 25}ms">
         <div class="menu-card-top-content">
           ${item.image ? `<img class="menu-thumb" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.style.display='none'">` : `<div class="icon-wrap"><span class="menu-icon">${CATEGORY_ICONS[item.category]||"🍽️"}</span></div>`}
           <div class="menu-card-header">
@@ -232,35 +248,80 @@ function renderMenu() {
         </div>
         <div class="menu-card-bottom">
           <span class="price">${money(item.price)}</span>
-          ${actionBtn}
+          <div class="card-action-slot" data-id="${item.id}">
+            ${actionBtn}
+          </div>
         </div>
       </article>`;
   }).join("");
-  $$(".menu-add-btn").forEach(btn => btn.addEventListener("click", () => addToCart(Number(btn.dataset.id), btn)));
 }
 
-function addToCart(id, btnEl) {
+function addToCart(id, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
   const item = menu.find(x => x.id === id);
   if (!item || !state.cafeOpen || item.availability === "sold_out") return;
+
   const existing = state.cart.find(x => x.id === id);
-  if (existing) existing.qty += 1;
-  else state.cart.push({ id: item.id, name: item.name, price: item.price, qty: 1 });
-  saveCart(); renderCart(); updateMobileBar(); renderMenu(); showToast(`${item.name} added`);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    state.cart.push({ id: item.id, name: item.name, price: item.price, qty: 1 });
+  }
+  saveCart();
+
+  // Optimistic UI updates - Zero screen flicker or full grid re-rendering
+  syncCardUI(id);
+  renderCartBadgeAndBar();
+  if (cartDrawer.classList.contains("open")) {
+    renderCartItems();
+  }
+
+  showToast(`${item.name} added`);
+
+  const btnEl = event?.currentTarget || document.querySelector(`.menu-add-btn[data-id="${id}"]`);
   if (btnEl && !reduceMotion) {
-    btnEl.classList.remove("just-added"); void btnEl.offsetWidth; btnEl.classList.add("just-added");
+    btnEl.classList.remove("just-added");
+    void btnEl.offsetWidth;
+    btnEl.classList.add("just-added");
     setTimeout(() => btnEl.classList.remove("just-added"), 450);
   }
 }
 
-function changeQty(id, delta) {
-  const item = state.cart.find(x => x.id === id); if (!item) return;
-  item.qty += delta; if (item.qty <= 0) state.cart = state.cart.filter(x => x.id !== id);
-  saveCart(); renderCart(); updateMobileBar(); renderMenu();
+function changeQty(id, delta, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const item = state.cart.find(x => x.id === id);
+  if (!item) return;
+
+  item.qty += delta;
+  if (item.qty <= 0) {
+    state.cart = state.cart.filter(x => x.id !== id);
+  }
+  saveCart();
+
+  // Optimistic UI updates - Zero screen flicker or full grid re-rendering
+  syncCardUI(id);
+  renderCartBadgeAndBar();
+  if (cartDrawer.classList.contains("open")) {
+    renderCartItems();
+  }
 }
 
-function removeItem(id) {
+function removeItem(id, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
   state.cart = state.cart.filter(x => x.id !== id);
-  saveCart(); renderCart(); updateMobileBar(); renderMenu();
+  saveCart();
+  syncCardUI(id);
+  renderCartBadgeAndBar();
+  renderCartItems();
 }
 
 function cartTotal() { return state.cart.reduce((sum, x) => sum + x.price * x.qty, 0); }
@@ -292,27 +353,41 @@ function updateMobileBar() {
 }
 document.getElementById("mobileCartBar")?.addEventListener("click", openCart);
 document.getElementById("mobileCartBtn")?.addEventListener("click", (e) => { e.stopPropagation(); openCart(); });
-function renderCart() {
+
+function renderCartBadgeAndBar() {
   const newCount = cartQuantity();
   const countChanged = cartCount.textContent !== String(newCount);
-  cartCount.textContent = newCount; cartSubtotal.textContent = money(cartTotal());
-  if (countChanged && !reduceMotion) { cartCount.classList.remove("bump"); void cartCount.offsetWidth; cartCount.classList.add("bump"); }
+  cartCount.textContent = newCount;
+  cartSubtotal.textContent = money(cartTotal());
+  if (countChanged && !reduceMotion) {
+    cartCount.classList.remove("bump");
+    void cartCount.offsetWidth;
+    cartCount.classList.add("bump");
+  }
+  updateMobileBar();
+}
+
+function renderCartItems() {
   if (!state.cart.length) {
     cartItems.innerHTML = `<div class="cart-empty"><div><span class="empty-icon">🛒</span><h3>Your cart is empty</h3><p>Add something delicious from the menu.</p></div></div>`;
     return;
   }
-  updateMobileBar();
   cartItems.innerHTML = state.cart.map((item, i) => `
-    <div class="cart-line" style="animation-delay:${reduceMotion ? 0 : i * 45}ms">
+    <div class="cart-line" style="animation-delay:${reduceMotion ? 0 : i * 35}ms">
       <div><h4>${escapeHtml(item.name)}</h4><small>${money(item.price)} each</small>
         <div class="qty" role="group" aria-label="Quantity controls">
-          <button onclick="changeQty(${item.id}, -1)" aria-label="Decrease quantity">−</button>
+          <button type="button" onclick="changeQty(${item.id}, -1, event)" aria-label="Decrease quantity">−</button>
           <strong aria-live="polite">${item.qty}</strong>
-          <button onclick="changeQty(${item.id}, 1)" aria-label="Increase quantity">+</button>
+          <button type="button" onclick="changeQty(${item.id}, 1, event)" aria-label="Increase quantity">+</button>
         </div>
-        <button class="remove-btn" onclick="removeItem(${item.id})" aria-label="Remove ${escapeHtml(item.name)}">Remove</button>
+        <button type="button" class="remove-btn" onclick="removeItem(${item.id}, event)" aria-label="Remove ${escapeHtml(item.name)}">Remove</button>
       </div><strong>${money(item.price * item.qty)}</strong>
     </div>`).join("");
+}
+
+function renderCart() {
+  renderCartBadgeAndBar();
+  renderCartItems();
 }
 
 function openCart() {
