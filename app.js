@@ -274,10 +274,7 @@ function addToCart(id, event) {
 
   // Optimistic UI updates - Zero screen flicker or full grid re-rendering
   syncCardUI(id);
-  renderCartBadgeAndBar();
-  if (cartDrawer.classList.contains("open")) {
-    renderCartItems();
-  }
+  renderCart();
 
   showToast(`${item.name} added`);
 
@@ -306,10 +303,7 @@ function changeQty(id, delta, event) {
 
   // Optimistic UI updates - Zero screen flicker or full grid re-rendering
   syncCardUI(id);
-  renderCartBadgeAndBar();
-  if (cartDrawer.classList.contains("open")) {
-    renderCartItems();
-  }
+  renderCart();
 }
 
 function removeItem(id, event) {
@@ -320,8 +314,7 @@ function removeItem(id, event) {
   state.cart = state.cart.filter(x => x.id !== id);
   saveCart();
   syncCardUI(id);
-  renderCartBadgeAndBar();
-  renderCartItems();
+  renderCart();
 }
 
 function cartTotal() { return state.cart.reduce((sum, x) => sum + x.price * x.qty, 0); }
@@ -368,11 +361,13 @@ function renderCartBadgeAndBar() {
 }
 
 function renderCartItems() {
+  const itemsContainer = document.getElementById("cartItems");
+  if (!itemsContainer) return;
   if (!state.cart.length) {
-    cartItems.innerHTML = `<div class="cart-empty"><div><span class="empty-icon">🛒</span><h3>Your cart is empty</h3><p>Add something delicious from the menu.</p></div></div>`;
+    itemsContainer.innerHTML = `<div class="cart-empty"><div><span class="empty-icon">🛒</span><h3>Your cart is empty</h3><p>Add something delicious from the menu.</p></div></div>`;
     return;
   }
-  cartItems.innerHTML = state.cart.map((item, i) => `
+  itemsContainer.innerHTML = state.cart.map((item, i) => `
     <div class="cart-line" style="animation-delay:${reduceMotion ? 0 : i * 35}ms">
       <div><h4>${escapeHtml(item.name)}</h4><small>${money(item.price)} each</small>
         <div class="qty" role="group" aria-label="Quantity controls">
@@ -391,6 +386,7 @@ function renderCart() {
 }
 
 function openCart() {
+  renderCart();
   cartDrawer.classList.add("open");
   backdrop.classList.add("show");
   document.body.classList.add("no-scroll");
