@@ -24,6 +24,7 @@ async function boot() {
 async function showApp() {
   $("#loginScreen").classList.add("hidden");
   $("#adminApp").classList.remove("hidden");
+  initDateFilters();
   await Promise.all([loadDashboard(), loadSettings(), loadMenu(), loadOrders()]);
   initLiveStream();
   startAutoRefresh();
@@ -133,11 +134,11 @@ async function loadDashboard() {
   try {
     const d = await api('/api/admin/dashboard');
     $("#stats").innerHTML = [
-      ['Today orders', d.today_orders],
-      ['Today revenue', money(d.today_revenue)],
-      ['New orders', d.new_orders],
-      ['Menu items', d.menu_items],
-      ['Sold out', d.sold_out_items]
+      ['Today Orders (24h)', d.today_orders || 0],
+      ['Today Revenue', money(d.today_revenue || 0)],
+      ['New Orders', d.new_orders || 0],
+      ['All-Time Orders', d.all_orders || 0],
+      ['All-Time Revenue', money(d.all_revenue || 0)]
     ].map(x => `<div class="stat"><span>${x[0]}</span><strong>${x[1]}</strong></div>`).join('');
 
     const newOrdersBadge = $("#newBadge");
@@ -145,23 +146,15 @@ async function loadDashboard() {
       const previousCount = parseInt(newOrdersBadge.textContent) || 0;
       newOrdersBadge.textContent = d.new_orders || '';
 
-      // Show notification if new orders arrived
       if (d.new_orders > previousCount && previousCount > 0) {
         toast(`${d.new_orders - previousCount} new order(s) received!`);
-        // Play notification sound if available
-        if (window.Audio) {
-          try {
-            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjGH0fPTgjMGHm7A7+OZRA0PVKzn77BdGAg+ltzy0H8pBSh+zPLaizsIGGS57OihUhELTKXh8bllHAU2jdXzzn4qBSh+zPLaizsIGGS57OihUhELTKXh8bllHAU2jdXzzn4qBSV8y/HajDgJFmG56+mjVBEMTqvm8bllHAU2jdXzzn4qBSV8y/HajDgJFmG56+mjVBEMTqvm8bllHAU2jdXzzn4qBSV8y/HajDgJFmG56+mjVBEMTqvm8bllHAU2jdXzzn4qBSV8y/HajDgJFmG56+mjVBEMTqvm8bllHAU2jdXzzn4qBQ==');
-            audio.volume = 0.3;
-            audio.play().catch(() => {});
-          } catch (e) {}
-        }
+        playNotificationSound();
       }
     }
 
     setCafeUI(d.cafe_open);
-    const od = await api('/api/admin/orders');
-    renderRecent(od.orders.slice(0, 5));
+    const od = await api('/api/admin/orders?date=today');
+    renderRecent((od.orders || []).slice(0, 5));
   } catch (err) {
     console.error('Dashboard load error:', err);
   }
@@ -374,15 +367,41 @@ if (soundBtn) {
   });
 }
 
+let currentDateFilter = "today";
 let currentStatusFilter = "";
 let orderSearchQuery = "";
+let lastLoadedStats = null;
+
+function initDateFilters() {
+  $$("#dateFilterPills .date-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      $$("#dateFilterPills .date-pill").forEach(p => p.classList.remove("active"));
+      pill.classList.add("active");
+      if ($("#orderDatePicker")) $("#orderDatePicker").value = "";
+      currentDateFilter = pill.dataset.date;
+      loadOrders();
+    });
+  });
+
+  const picker = $("#orderDatePicker");
+  if (picker) {
+    picker.addEventListener("change", (e) => {
+      const selected = e.target.value;
+      if (selected) {
+        $$("#dateFilterPills .date-pill").forEach(p => p.classList.remove("active"));
+        currentDateFilter = selected;
+        loadOrders();
+      }
+    });
+  }
+}
 
 $$("#orderStatusTabs .tab-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     $$("#orderStatusTabs .tab-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     currentStatusFilter = btn.dataset.status;
-    renderOrders();
+    loadOrders();
   });
 });
 
@@ -391,10 +410,42 @@ $("#orderSearch")?.addEventListener("input", e => {
   renderOrders();
 });
 
+function renderDateStatsStrip() {
+  const strip = $("#dateStatsStrip");
+  if (!strip) return;
+  const s = lastLoadedStats;
+  if (!s) {
+    strip.innerHTML = "";
+    return;
+  }
+  let dateLabel = "Today (Live 24h)";
+  if (currentDateFilter === "yesterday") dateLabel = "Yesterday";
+  else if (currentDateFilter === "7days") dateLabel = "Last 7 Days";
+  else if (currentDateFilter === "all") dateLabel = "All-Time History";
+  else if (currentDateFilter !== "today") dateLabel = currentDateFilter;
+
+  strip.innerHTML = `
+    <div>
+      <strong>📅 ${esc(dateLabel)}:</strong> 
+      <span>${s.total_orders} orders (<b style="color:var(--g)">${money(s.total_revenue)}</b>)</span>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <span class="date-stat-chip">🟡 ${s.count_new} New</span>
+      <span class="date-stat-chip">👨‍🍳 ${s.count_preparing} Kitchen</span>
+      <span class="date-stat-chip">🔔 ${s.count_ready} Ready</span>
+      <span class="date-stat-chip">✅ ${s.count_completed} Completed</span>
+      <span class="date-stat-chip">🍽️ ${s.count_dine_in} Dine-in</span>
+      <span class="date-stat-chip">🛵 ${s.count_delivery} Delivery</span>
+    </div>
+  `;
+}
+
 async function loadOrders() {
   try {
-    const d = await api('/api/admin/orders');
+    const url = `/api/admin/orders?date=${encodeURIComponent(currentDateFilter)}${currentStatusFilter ? `&status=${encodeURIComponent(currentStatusFilter)}` : ''}`;
+    const d = await api(url);
     const newOrders = d.orders || [];
+    lastLoadedStats = d.stats || null;
     
     if (newOrders.length > 0) {
       const maxId = Math.max(...newOrders.map(o => o.id || 0));
@@ -409,8 +460,9 @@ async function loadOrders() {
     }
 
     orders = newOrders;
+    renderDateStatsStrip();
     renderOrders();
-    const fresh = orders.filter(x => x.status === 'new').length;
+    const fresh = (lastLoadedStats && lastLoadedStats.count_new) || orders.filter(x => x.status === 'new').length;
     if ($("#newBadge")) $("#newBadge").textContent = fresh || '';
     if ($("#countNew")) $("#countNew").textContent = fresh || '0';
   } catch (err) {

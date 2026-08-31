@@ -671,9 +671,15 @@ def dashboard():
 
     stats = conn.execute(
         """SELECT COUNT(*) orders, COALESCE(SUM(total),0) revenue,
-           SUM(CASE WHEN status='new' THEN 1 ELSE 0 END) new_orders
+           SUM(CASE WHEN status='new' THEN 1 ELSE 0 END) new_orders,
+           SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) completed_orders
            FROM orders WHERE substr(created_at,1,10)=?""",
         (today,)
+    ).fetchone()
+
+    all_time = conn.execute(
+        """SELECT COUNT(*) all_orders, COALESCE(SUM(total),0) all_revenue
+           FROM orders"""
     ).fetchone()
 
     items = conn.execute("SELECT COUNT(*) c FROM menu_items").fetchone()["c"]
@@ -682,9 +688,12 @@ def dashboard():
     ).fetchone()["c"]
 
     data = {
-        "today_orders": stats["orders"],
-        "today_revenue": stats["revenue"],
+        "today_orders": stats["orders"] or 0,
+        "today_revenue": stats["revenue"] or 0,
         "new_orders": stats["new_orders"] or 0,
+        "completed_orders": stats["completed_orders"] or 0,
+        "all_orders": all_time["all_orders"] or 0,
+        "all_revenue": all_time["all_revenue"] or 0,
         "menu_items": items,
         "sold_out_items": closed,
         "cafe_open": setting(conn, "cafe_open", "1") == "1"
@@ -873,20 +882,76 @@ def order_json(conn, row, include_items=True):
 @app.get("/api/admin/orders")
 @admin_required
 def admin_orders():
-    status = request.args.get("status", "")
+    status = request.args.get("status", "").strip()
+    date_filter = request.args.get("date", "today").strip()
+    
     conn = db()
-
+    today_str = datetime.now().date().isoformat()
+    
+    where_clauses = []
+    params = []
+    
+    if date_filter == "today":
+        where_clauses.append("substr(created_at, 1, 10) = ?")
+        params.append(today_str)
+    elif date_filter == "yesterday":
+        from datetime import timedelta
+        yesterday_str = (datetime.now().date() - timedelta(days=1)).isoformat()
+        where_clauses.append("substr(created_at, 1, 10) = ?")
+        params.append(yesterday_str)
+    elif date_filter == "7days":
+        from datetime import timedelta
+        start_date = (datetime.now().date() - timedelta(days=7)).isoformat()
+        where_clauses.append("substr(created_at, 1, 10) >= ?")
+        params.append(start_date)
+    elif date_filter != "all" and len(date_filter) == 10 and date_filter.count("-") == 2:
+        where_clauses.append("substr(created_at, 1, 10) = ?")
+        params.append(date_filter)
+    
+    date_where_sql = f"WHERE {where_clauses[0]}" if (where_clauses and "substr(created_at" in where_clauses[0]) else ""
+    date_params = [params[0]] if (where_clauses and "substr(created_at" in where_clauses[0]) else []
+    
+    stats_query = f"""
+        SELECT COUNT(*) total_orders,
+               COALESCE(SUM(total), 0) total_revenue,
+               SUM(CASE WHEN status='new' THEN 1 ELSE 0 END) count_new,
+               SUM(CASE WHEN status='confirmed' THEN 1 ELSE 0 END) count_confirmed,
+               SUM(CASE WHEN status='preparing' THEN 1 ELSE 0 END) count_preparing,
+               SUM(CASE WHEN status='ready' THEN 1 ELSE 0 END) count_ready,
+               SUM(CASE WHEN status='completed' THEN 1 ELSE 0 END) count_completed,
+               SUM(CASE WHEN status='cancelled' THEN 1 ELSE 0 END) count_cancelled,
+               SUM(CASE WHEN order_type='Dine-in' THEN 1 ELSE 0 END) count_dine_in,
+               SUM(CASE WHEN order_type='Takeaway' THEN 1 ELSE 0 END) count_takeaway,
+               SUM(CASE WHEN order_type='Delivery' THEN 1 ELSE 0 END) count_delivery
+        FROM orders {date_where_sql}
+    """
+    stats_row = conn.execute(stats_query, date_params).fetchone()
+    
     if status in ORDER_STATUSES:
-        rows = conn.execute(
-            "SELECT * FROM orders WHERE status=? ORDER BY id DESC LIMIT 300",
-            (status,)
-        ).fetchall()
-    else:
-        rows = conn.execute("SELECT * FROM orders ORDER BY id DESC LIMIT 300").fetchall()
-
+        where_clauses.append("status = ?")
+        params.append(status)
+        
+    where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
+    rows = conn.execute(f"SELECT * FROM orders {where_sql} ORDER BY id DESC LIMIT 500", params).fetchall()
+    
     data = [order_json(conn, r) for r in rows]
+    
+    stats = {
+        "total_orders": stats_row["total_orders"] if stats_row else 0,
+        "total_revenue": stats_row["total_revenue"] if stats_row else 0,
+        "count_new": stats_row["count_new"] or 0 if stats_row else 0,
+        "count_confirmed": stats_row["count_confirmed"] or 0 if stats_row else 0,
+        "count_preparing": stats_row["count_preparing"] or 0 if stats_row else 0,
+        "count_ready": stats_row["count_ready"] or 0 if stats_row else 0,
+        "count_completed": stats_row["count_completed"] or 0 if stats_row else 0,
+        "count_cancelled": stats_row["count_cancelled"] or 0 if stats_row else 0,
+        "count_dine_in": stats_row["count_dine_in"] or 0 if stats_row else 0,
+        "count_takeaway": stats_row["count_takeaway"] or 0 if stats_row else 0,
+        "count_delivery": stats_row["count_delivery"] or 0 if stats_row else 0
+    }
+    
     conn.close()
-    return jsonify(orders=data)
+    return jsonify(orders=data, stats=stats, date_filter=date_filter)
 
 
 @app.patch("/api/admin/orders/<int:order_id>")

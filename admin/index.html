@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/admin/admin.css">
+<link rel="stylesheet" href="/admin/admin.css?v=2.0">
 </head>
 <body>
 <div class="grain"></div>
@@ -40,17 +40,38 @@
     </section>
 
     <section class="view hidden" id="view-orders">
-      <div class="toolbar" style="flex-direction:column;align-items:stretch;gap:14px">
+      <div class="toolbar" style="flex-direction:column;align-items:stretch;gap:12px">
+        <!-- Date Selection Toolbar: Today (24h Live), Yesterday, 7 Days, All History & Custom Date Picker -->
+        <div class="date-filter-toolbar">
+          <div class="date-filter-pills" id="dateFilterPills">
+            <button class="date-pill active" data-date="today">🕒 Today (Live 24h)</button>
+            <button class="date-pill" data-date="yesterday">📅 Yesterday</button>
+            <button class="date-pill" data-date="7days">📆 Last 7 Days</button>
+            <button class="date-pill" data-date="all">🗂️ All History</button>
+          </div>
+          <div class="custom-date-picker">
+            <span>📅 Custom:</span>
+            <input type="date" id="orderDatePicker" title="Pick specific date">
+          </div>
+        </div>
+
+        <!-- Date Summary Stats Strip -->
+        <div class="date-stats-strip" id="dateStatsStrip"></div>
+
+        <!-- Status Filter Tabs -->
         <div class="order-status-tabs" id="orderStatusTabs">
-          <button class="tab-btn active" data-status="">All Orders</button>
+          <button class="tab-btn active" data-status="">All Status</button>
           <button class="tab-btn" data-status="new">🟡 New</button>
           <button class="tab-btn" data-status="confirmed">🔵 Confirmed</button>
           <button class="tab-btn" data-status="preparing">👨‍🍳 Kitchen</button>
           <button class="tab-btn" data-status="ready">🔔 Ready</button>
-          <button class="tab-btn" data-status="completed">Completed</button>
+          <button class="tab-btn" data-status="completed">✅ Completed</button>
+          <button class="tab-btn" data-status="cancelled">❌ Cancelled</button>
         </div>
-        <div style="display:flex;justify-content:space-between;gap:12px">
-          <input id="orderSearch" placeholder="Search order code, customer name, phone, table..." style="width:min(420px,100%)">
+
+        <!-- Search & Refresh -->
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <input id="orderSearch" placeholder="🔍 Search order code, customer name, phone, table..." style="flex:1 1 300px;min-width:0">
           <button class="soft" id="refreshOrders">🔄 Refresh</button>
         </div>
       </div>
@@ -84,4 +105,4 @@
 </label><label>Description<textarea id="itemDescription" rows="3"></textarea></label><button class="primary" type="submit">Save item</button></form></div></div>
 <div class="toast" id="adminToast"></div>
 <iframe id="receiptPrinterFrame" style="position:fixed;width:0;height:0;border:0;visibility:hidden;"></iframe>
-<script src="/admin/admin.js"></script></body></html>
+<script src="/admin/admin.js?v=2.0"></script></body></html>

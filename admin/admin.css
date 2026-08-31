@@ -93,6 +93,93 @@ td small{display:block;color:var(--muted);margin-top:4px}
 .order-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px}
 .order-bottom strong{font-family:var(--font-accent);font-weight:850;font-size:1.35rem}
 .order-bottom select{width:auto;min-width:130px;font-size:.78rem;padding:7px 10px}
+/* Date Filter Toolbar */
+.date-filter-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.date-filter-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.date-pill {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.80rem;
+  font-weight: 750;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  transition: all 0.2s ease;
+}
+.date-pill:hover {
+  background: white;
+}
+.date-pill.active {
+  background: var(--g);
+  color: white;
+  border-color: var(--g);
+  box-shadow: 0 4px 12px rgba(58, 99, 57, 0.22);
+}
+.custom-date-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.80rem;
+  font-weight: 750;
+  color: var(--muted);
+}
+.custom-date-picker input[type="date"] {
+  width: auto;
+  min-width: 140px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-family: var(--font-sans);
+  background: white;
+  border: 1px solid var(--line);
+}
+
+/* Date Summary Stats Strip */
+.date-stats-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: rgba(58, 99, 57, 0.07);
+  border: 1px solid rgba(58, 99, 57, 0.16);
+  border-radius: 14px;
+  font-size: 0.82rem;
+  font-family: var(--font-sans);
+  color: var(--g2);
+}
+.date-stats-strip strong {
+  color: var(--ink);
+}
+.date-stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 3px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
 .order-status-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
 .tab-btn{border:1px solid var(--line);background:rgba(255,255,255,.5);border-radius:999px;padding:8px 16px;font-size:.82rem;font-weight:750;cursor:pointer;white-space:nowrap;font-family:var(--font-sans);color:var(--ink);transition:all .2s ease}
 .tab-btn:hover{background:rgba(255,255,255,.8)}

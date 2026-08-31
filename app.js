@@ -890,6 +890,20 @@ document.addEventListener("click",e=>{
   }
 });
 $("#searchBtn")?.addEventListener("click",()=>{showPage("menu");setTimeout(()=>$("#menuSearch")?.focus(),400)});
-$("#heroOrderBtn")?.addEventListener("click",()=>showPage("menu"));
-
 loadStore();
+
+// Live background store & menu synchronization (8-second interval)
+setInterval(async () => {
+  if (document.hidden) return;
+  try {
+    const [st, m] = await Promise.all([api("/api/status"), api("/api/menu")]);
+    state.cafeOpen = st.cafe_open;
+    state.settings = st.settings;
+    applyStoreStatus();
+    if (m && m.items && JSON.stringify(menu.map(x=>({id:x.id,p:x.price,a:x.availability}))) !== JSON.stringify(m.items.map(x=>({id:x.id,p:x.price,a:x.availability})))) {
+      menu = m.items;
+      syncCartWithMenu();
+      renderMenu();
+    }
+  } catch (_) {}
+}, 8000);
