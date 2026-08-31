@@ -288,8 +288,8 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: 14px;
+  margin-bottom: 20px;
 }
 .category-scroll {
   width: 100%;
@@ -418,113 +418,6 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   border: 1px solid rgba(255,255,255,0.55);
   box-shadow: 0 4px 12px rgba(212, 169, 60, 0.32), inset 0 1px 0 rgba(255,255,255,0.7);
   text-shadow: 0 1px 0 rgba(255,255,255,0.4);
-}
-
-/* Popular Picks / Bestsellers Highlight Strip */
-.bestseller-highlight {
-  margin-bottom: 24px;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-}
-.bestseller-highlight-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.bestseller-highlight-head h3 {
-  font-family: var(--font-items);
-  font-size: 1.22rem;
-  font-weight: 800;
-  color: var(--ink);
-  margin: 0;
-}
-.bestseller-highlight-head small {
-  font-size: 0.80rem;
-  color: var(--muted);
-  font-weight: 600;
-}
-.bestseller-carousel {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 8px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-}
-.bestseller-carousel::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
-}
-.bestseller-item {
-  flex: 0 0 210px;
-  scroll-snap-align: start;
-  background: var(--card);
-  border: 1px solid rgba(212, 169, 60, 0.4);
-  border-radius: 20px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 8px 24px rgba(35, 25, 12, 0.08);
-  position: relative;
-  overflow: hidden;
-}
-.bestseller-item::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3.5px;
-  background: linear-gradient(90deg, #FBE39D, #D4A93C, #A87D1B);
-}
-.bestseller-thumb {
-  width: 100%;
-  height: 115px;
-  object-fit: cover;
-  border-radius: 14px;
-  margin-bottom: 8px;
-}
-.bestseller-icon {
-  width: 100%;
-  height: 85px;
-  display: grid;
-  place-items: center;
-  font-size: 2.2rem;
-  background: rgba(58, 99, 57, 0.05);
-  border-radius: 14px;
-  margin-bottom: 8px;
-}
-.bestseller-item-info h4 {
-  font-family: var(--font-items);
-  font-size: 0.98rem;
-  font-weight: 800;
-  color: var(--ink);
-  margin: 0 0 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.bestseller-item-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 4px;
-}
-.bestseller-item-bottom .price {
-  font-size: 1.15rem;
-  font-weight: 850;
-  color: var(--green);
 }
 
 .menu-grid {
@@ -1357,17 +1250,14 @@ textarea { resize: vertical; }
     max-width: 100%;
   }
   
-  /* Sticky Horizontal Category Bar */
+  /* Menu Toolbar - Clean layout without sticky overlap */
   .menu-toolbar {
-    position: sticky;
-    top: 60px;
-    z-index: 35;
-    background: rgba(253, 246, 228, 0.96);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    padding: 8px 0 10px;
+    position: static;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    padding: 0;
     margin-bottom: 12px;
-    border-bottom: 1px solid rgba(58, 99, 57, 0.08);
     width: 100%;
     max-width: 100%;
     min-width: 0;
@@ -1443,28 +1333,6 @@ textarea { resize: vertical; }
     font-size: 16px !important;
     border-radius: 12px;
     padding: 0 14px;
-  }
-  
-  /* Bestsellers Highlight Strip on Mobile */
-  .bestseller-highlight {
-    margin-bottom: 16px;
-  }
-  .bestseller-item {
-    flex: 0 0 165px;
-    padding: 10px;
-    border-radius: 16px;
-  }
-  .bestseller-thumb {
-    height: 95px;
-    border-radius: 10px;
-    margin-bottom: 6px;
-  }
-  .bestseller-item-info h4 {
-    font-size: 0.88rem;
-    margin-bottom: 4px;
-  }
-  .bestseller-item-bottom .price {
-    font-size: 1.05rem;
   }
   
   /* Mobile Menu Grid: Exactly 2 Cards Per Row */

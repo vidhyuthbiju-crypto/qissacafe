@@ -201,54 +201,7 @@ function availabilityMeta(item) {
   return { label: "", cls: "", showBadge: false, disabled: false };
 }
 
-function renderBestsellerHighlight() {
-  const highlightContainer = document.getElementById("bestsellerHighlight");
-  const carousel = document.getElementById("bestsellerCarousel");
-  if (!highlightContainer || !carousel) return;
-
-  const showHighlight = (state.category === "All") && !state.query.trim() && state.dietFilter === "all";
-  if (!showHighlight) {
-    highlightContainer.style.display = "none";
-    return;
-  }
-
-  const bestsellers = menu.filter(x => x.is_bestseller).slice(0, 6);
-  if (!bestsellers.length) {
-    highlightContainer.style.display = "none";
-    return;
-  }
-
-  highlightContainer.style.display = "block";
-  carousel.innerHTML = bestsellers.map(item => {
-    const inCart = state.cart.find(x => x.id === item.id);
-    const disabled = !state.cafeOpen || item.availability === "sold_out";
-    const actionBtn = (inCart && inCart.qty > 0 && !disabled)
-      ? `<div class="card-qty-ctrl">
-           <button class="qty-btn dec-btn" onclick="changeQty(${item.id}, -1)" aria-label="Decrease quantity">−</button>
-           <span class="card-qty-num">${inCart.qty}</span>
-           <button class="qty-btn inc-btn" onclick="changeQty(${item.id}, 1)" aria-label="Increase quantity">+</button>
-         </div>`
-      : `<button class="add-btn highlight-add-btn" data-id="${item.id}" ${disabled ? "disabled" : ""} aria-label="Add ${escapeHtml(item.name)} to cart">${disabled ? "Sold" : "+"}</button>`;
-
-    return `
-      <div class="bestseller-item">
-        ${item.image ? `<img class="bestseller-thumb" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.style.display='none'">` : `<div class="bestseller-icon">${CATEGORY_ICONS[item.category]||"⭐"}</div>`}
-        <div class="bestseller-item-info">
-          <h4>${escapeHtml(item.name)}</h4>
-          <div class="bestseller-item-bottom">
-            <span class="price">${money(item.price)}</span>
-            ${actionBtn}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join("");
-
-  $$(".highlight-add-btn").forEach(btn => btn.addEventListener("click", () => addToCart(Number(btn.dataset.id), btn)));
-}
-
 function renderMenu() {
-  renderBestsellerHighlight();
   const items = filteredMenu();
   if (!items.length) {
     menuGrid.innerHTML = `<div class="cart-empty" style="grid-column:1/-1"><div><span class="no-results-icon">🔎</span><h3>No menu items found</h3><p>Try a different category or search.</p></div></div>`;
