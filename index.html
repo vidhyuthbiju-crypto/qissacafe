@@ -23,24 +23,38 @@
 <a href="#" data-page="home" class="active">Home</a><a href="#" data-page="menu">Menu</a><a href="#" data-page="story">Our Story</a><a href="#" data-page="visit">Visit</a>
 </div>
 <div class="nav-actions">
-  <button class="ghost-btn" id="shareSiteBtn" title="Share Qissa Cafe with friends">Share ↗</button>
-  <button class="ghost-btn" id="searchBtn">Search</button>
+  <button class="ghost-btn" id="searchBtn">Search 🔍</button>
   <button class="cart-btn" id="cartBtn">Cart <span id="cartCount">0</span></button>
 </div>
 </nav></header>
 <main>
 <section class="page active" id="page-home">
-<div class="hero"><div class="orb orb-a"></div><div class="orb orb-b"></div>
-<div class="hero-grid container">
-<div class="hero-copy">
-<div class="eyebrow reveal"><span class="status-dot"></span><span id="shopStatus">CHECKING...</span></div>
-<h1 class="reveal">Every bite<br><em>has a story.</em></h1>
-<p class="reveal">Crafted comfort food, chilled favourites, and late-evening cravings — served with a premium touch.</p>
-<div class="hero-actions reveal"><a href="#" class="primary-btn" data-page="menu">Explore Menu &rarr;</a><button class="secondary-btn" data-page="menu" id="heroOrderBtn">Order Now</button></div>
-<div class="hero-meta reveal"><div><span>FAST</span><small>Ordering</small></div><div><span>LIVE</span><small>Availability</small></div><div><span>DIRECT</span><small>WhatsApp</small></div></div>
+<div class="hero">
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="hero-grid container">
+    <div class="hero-copy">
+      <div class="eyebrow reveal"><span class="status-dot"></span><span id="shopStatus">OPEN FOR ORDERS</span> <span class="eyebrow-sep">•</span> <span>Nilambur</span></div>
+      <h1 class="reveal">Every bite<br><em>has a story.</em></h1>
+      <p class="reveal hero-desc">Crafted shawarmas, crispy broasts, thick shakes &amp; sparkling mojitos — made fresh to order.</p>
+      <div class="hero-actions reveal">
+        <a href="#" class="primary-btn hero-cta-btn" data-page="menu"><span>Explore Menu</span> &rarr;</a>
+        <a href="#" class="secondary-btn hero-sub-btn" data-page="visit"><span>Visit &amp; Location</span> 📍</a>
+      </div>
+      <div class="hero-badges reveal">
+        <div class="hero-badge-pill"><span>🌯</span> 70+ Items</div>
+        <div class="hero-badge-pill"><span>⭐</span> 4.8 Rating</div>
+        <div class="hero-badge-pill"><span>⚡</span> Fresh Daily</div>
+      </div>
+    </div>
+    <div class="hero-visual reveal">
+      <div class="logo-stage">
+        <div class="logo-halo"></div>
+        <img src="assets/qissa-logo.jpeg" alt="Qissa Cafe" class="hero-logo"/>
+      </div>
+    </div>
+  </div>
 </div>
-<div class="hero-visual reveal"><div class="logo-stage"><div class="logo-halo"></div><img src="assets/qissa-logo.jpeg" alt="Qissa" class="hero-logo"/><div class="floating-chip chip-one">Freshly made</div><div class="floating-chip chip-two">100% Qissa</div></div></div>
-</div></div>
 <div class="marquee-section"><div class="marquee"><div class="marquee-track"><span>SHAWARMA</span><b>&#10022;</b><span>BROAST</span><b>&#10022;</b><span>BURGERS</span><b>&#10022;</b><span>SHAKES</span><b>&#10022;</b><span>MOJITOS</span><b>&#10022;</b><span>FALOODA</span><b>&#10022;</b><span>SHAWARMA</span><b>&#10022;</b><span>BROAST</span><b>&#10022;</b><span>BURGERS</span><b>&#10022;</b><span>SHAKES</span><b>&#10022;</b><span>MOJITOS</span><b>&#10022;</b><span>FALOODA</span><b>&#10022;</b></div></div></div>
 <div class="home-cards-section">
   <div class="home-cards-orb home-cards-orb-1"></div>
@@ -80,15 +94,31 @@
 </div>
 </section>
 <section class="page" id="page-menu">
-<div class="menu-hero"><div class="container"><span class="kicker" style="color:var(--gold-2)">THE QISSA MENU</span><h2>Pick your <em>favourite.</em></h2><p>Tap + to add to cart.</p></div></div>
-<div class="container" style="padding:28px 0 80px">
-  <div class="menu-toolbar">
-    <div class="category-scroll" id="categoryFilters"></div>
-    <div class="diet-filters" id="dietFilters">
-      <button class="diet-btn active" data-diet="all">All Items</button>
-      <button class="diet-btn" data-diet="bestseller">⭐ Bestsellers</button>
+<div class="menu-hero">
+  <div class="container">
+    <span class="kicker" style="color:var(--gold-2)">THE QISSA MENU</span>
+    <h2>Pick your <em>favourite.</em></h2>
+    <p>Tap any category or search below to explore 70+ crafted dishes.</p>
+  </div>
+</div>
+<div class="container" style="padding:20px 0 80px">
+  <div class="menu-toolbar-wrapper">
+    <div class="menu-search-row">
+      <div class="menu-search">
+        <span class="search-icon">🔍</span>
+        <input id="menuSearch" type="search" placeholder="Search shawarma, mojito, burger..." autocomplete="off"/>
+      </div>
+      <button class="category-fab-btn" id="openCategoryModal" aria-label="Open categories menu">
+        <span>⚡ Categories</span>
+      </button>
     </div>
-    <div class="menu-search"><input id="menuSearch" type="search" placeholder="Search shawarma, mojito..."/></div>
+    <div class="menu-filter-bar">
+      <div class="category-scroll" id="categoryFilters"></div>
+      <div class="diet-filters" id="dietFilters">
+        <button class="diet-btn active" data-diet="all">All</button>
+        <button class="diet-btn" data-diet="bestseller">⭐ Bestsellers</button>
+      </div>
+    </div>
   </div>
   <div class="menu-grid" id="menuGrid"></div>
 </div>
@@ -128,6 +158,20 @@
 <aside class="cart-drawer" id="cartDrawer"><div class="drawer-head"><div><span class="kicker">YOUR ORDER</span><h3>Qissa Cart</h3></div><button class="icon-btn" id="closeCart">&times;</button></div><div class="cart-items" id="cartItems"></div><div class="cart-footer"><div class="subtotal-row"><span>Subtotal</span><strong id="cartSubtotal">Rs0</strong></div><button class="primary-btn checkout-btn" id="checkoutBtn">Continue to Checkout</button><small>Order saved before WhatsApp opens.</small></div></aside>
 <div class="backdrop" id="backdrop"></div>
 <div class="checkout-modal" id="checkoutModal"><div class="checkout-card"><button class="icon-btn checkout-close" id="closeCheckout">&times;</button><span class="kicker">FINAL STEP</span><h2>Confirm your order</h2><form id="checkoutForm"><div class="field-grid"><label>Your name<input id="customerName" required placeholder="Name"/></label><label>Phone<input id="customerPhone" required placeholder="10-digit number" pattern="[6-9][0-9]{9}"/></label></div><label>Order type<select id="orderType"><option value="Takeaway">Takeaway (Pickup)</option><option value="Dine-in">Dine-in (Table)</option><option value="Delivery">Home Delivery</option></select></label><div id="tableGroup" style="display:none"><label>Table number<input id="tableNumber" placeholder="e.g. Table 4"/></label></div><div id="deliveryGroup" style="display:none"><label>Delivery address &amp; landmark<textarea id="deliveryAddress" rows="2" placeholder="Full address, building/flat name, landmark"></textarea></label></div><label>Special instructions<textarea id="orderNotes" rows="2" placeholder="Less spicy, no onion..." maxlength="500"></textarea></label><div class="checkout-summary" id="checkoutSummary"></div><button type="submit" class="primary-btn full-btn" id="confirmOrderBtn">Place Order</button></form></div></div>
+
+<!-- Quick Category Jump Bottom-Sheet Modal -->
+<div class="category-modal" id="categoryModal">
+  <div class="category-modal-card">
+    <div class="category-modal-header">
+      <div>
+        <span class="kicker" style="color:var(--green)">QUICK JUMP</span>
+        <h3 style="margin:4px 0 0;font-family:var(--font-items);font-weight:800;font-size:1.35rem">Menu Categories</h3>
+      </div>
+      <button class="icon-btn category-modal-close" id="closeCategoryModal">&times;</button>
+    </div>
+    <div class="category-modal-grid" id="categoryModalGrid"></div>
+  </div>
+</div>
 
 <!-- Live Order Status & Tracking Modal -->
 <div class="order-tracking-modal" id="orderTrackingModal">

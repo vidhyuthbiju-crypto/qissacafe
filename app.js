@@ -14,7 +14,7 @@ const ORDER_SUBMISSION_TIMEOUT_MS = 30000;
 const CATEGORY_ORDER = ["Shawarma", "Broast", "Burger", "Sandwich", "Fried", "Classic Shake", "Falooda", "Mojito", "Soda", "Lemon Juice", "Hot"];
 
 const CATEGORY_ICONS = {
-  "Shawarma": "🌯", "Broast": "🍗", "Burger": "🍔", "Sandwich": "🥪",
+  "All": "✨", "Shawarma": "🌯", "Broast": "🍗", "Burger": "🍔", "Sandwich": "🥪",
   "Fried": "🍟", "Classic Shake": "🥤", "Falooda": "🍨", "Mojito": "🍹",
   "Soda": "🧃", "Lemon Juice": "🍋", "Hot": "☕"
 };
@@ -161,13 +161,49 @@ function formatWhatsapp(num) {
 }
 
 function renderCategories() {
-  categoryFilters.innerHTML = categories().map(cat => `
-    <button class="category-btn ${state.category === cat ? "active" : ""}" data-category="${escapeHtml(cat)}" aria-pressed="${state.category === cat}">${escapeHtml(cat)}</button>
-  `).join("");
+  const cats = categories();
+  categoryFilters.innerHTML = cats.map(cat => {
+    const icon = CATEGORY_ICONS[cat] || "🍽️";
+    const count = cat === "All" ? menu.length : menu.filter(m => m.category === cat).length;
+    return `
+      <button class="category-btn ${state.category === cat ? "active" : ""}" data-category="${escapeHtml(cat)}" aria-pressed="${state.category === cat}">
+        <span class="cat-btn-icon">${icon}</span>
+        <span class="cat-btn-text">${escapeHtml(cat)}</span>
+        <span class="cat-btn-count">${count}</span>
+      </button>
+    `;
+  }).join("");
+
   $$(".category-btn").forEach(btn => btn.addEventListener("click", () => {
     state.category = btn.dataset.category;
-    renderCategories(); renderMenu();
+    renderCategories();
+    renderMenu();
+    btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }));
+
+  // Populate Quick-Jump Category Bottom-Sheet Modal
+  const modalGrid = $("#categoryModalGrid");
+  if (modalGrid) {
+    modalGrid.innerHTML = cats.map(cat => {
+      const icon = CATEGORY_ICONS[cat] || "🍽️";
+      const count = cat === "All" ? menu.length : menu.filter(m => m.category === cat).length;
+      return `
+        <button class="cat-modal-card ${state.category === cat ? "active" : ""}" data-category="${escapeHtml(cat)}">
+          <span class="cat-modal-icon">${icon}</span>
+          <span class="cat-modal-name">${escapeHtml(cat)}</span>
+          <span class="cat-modal-count">${count} items</span>
+        </button>
+      `;
+    }).join("");
+
+    $$(".cat-modal-card").forEach(card => card.addEventListener("click", () => {
+      state.category = card.dataset.category;
+      renderCategories();
+      renderMenu();
+      closeOverlays();
+      $("#menuGrid")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }));
+  }
 }
 
 function initDietFilters() {
@@ -308,6 +344,7 @@ function openCart() {
 function closeOverlays() {
   cartDrawer.classList.remove("open");
   checkoutModal.classList.remove("show");
+  if ($("#categoryModal")) $("#categoryModal").classList.remove("show");
   if ($("#orderTrackingModal")) $("#orderTrackingModal").classList.remove("show");
   if (trackingPollTimer) {
     clearInterval(trackingPollTimer);
@@ -409,22 +446,21 @@ function debouncedSearch(value) {
 // Event listeners
 $("#cartBtn").addEventListener("click", openCart);
 
-$("#shareSiteBtn")?.addEventListener("click", async () => {
-  const shareData = {
-    title: "Qissa Resto Cafe",
-    text: "Check out Qissa Resto Cafe menu & order online!",
-    url: window.location.href
-  };
-  if (navigator.share) {
-    try {
-      await navigator.share(shareData);
-    } catch (_) {}
-  } else {
-    const waUrl = `https://wa.me/?text=${encodeURIComponent("Check out Qissa Resto Cafe menu & order online: " + window.location.href)}`;
-    window.open(waUrl, "_blank");
-  }
+$("#searchBtn")?.addEventListener("click", () => {
+  const menuLink = document.querySelector(".nav-links a[data-page='menu']");
+  if (menuLink) menuLink.click();
+  setTimeout(() => {
+    $("#menuSearch")?.focus();
+  }, 250);
 });
 
+$("#openCategoryModal")?.addEventListener("click", () => {
+  $("#categoryModal")?.classList.add("show");
+  backdrop.classList.add("show");
+  document.body.classList.add("no-scroll");
+});
+
+$("#closeCategoryModal")?.addEventListener("click", closeOverlays);
 $("#closeCart").addEventListener("click", closeOverlays);
 $("#closeCheckout").addEventListener("click", closeOverlays);
 $("#checkoutBtn").addEventListener("click", openCheckout);
