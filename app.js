@@ -419,23 +419,6 @@ function debouncedSearch(value) {
 
 // Event listeners
 $("#cartBtn").addEventListener("click", openCart);
-
-$("#shareSiteBtn")?.addEventListener("click", async () => {
-  const shareData = {
-    title: "Qissa Resto Cafe",
-    text: "Check out Qissa Resto Cafe menu & order online!",
-    url: window.location.href
-  };
-  if (navigator.share) {
-    try {
-      await navigator.share(shareData);
-    } catch (_) {}
-  } else {
-    const waUrl = `https://wa.me/?text=${encodeURIComponent("Check out Qissa Resto Cafe menu & order online: " + window.location.href)}`;
-    window.open(waUrl, "_blank");
-  }
-});
-
 $("#closeCart").addEventListener("click", closeOverlays);
 $("#closeCheckout").addEventListener("click", closeOverlays);
 $("#checkoutBtn").addEventListener("click", openCheckout);

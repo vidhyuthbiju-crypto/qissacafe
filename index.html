@@ -23,8 +23,7 @@
 <a href="#" data-page="home" class="active">Home</a><a href="#" data-page="menu">Menu</a><a href="#" data-page="story">Our Story</a><a href="#" data-page="visit">Visit</a>
 </div>
 <div class="nav-actions">
-  <button class="ghost-btn" id="shareSiteBtn" title="Share Qissa Cafe with friends">Share ↗</button>
-  <button class="ghost-btn" id="searchBtn">Search</button>
+  <button class="ghost-btn" id="searchBtn">Search 🔍</button>
   <button class="cart-btn" id="cartBtn">Cart <span id="cartCount">0</span></button>
 </div>
 </nav></header>
@@ -81,14 +80,16 @@
 </section>
 <section class="page" id="page-menu">
 <div class="menu-hero"><div class="container"><span class="kicker" style="color:var(--gold-2)">THE QISSA MENU</span><h2>Pick your <em>favourite.</em></h2><p>Tap + to add to cart.</p></div></div>
-<div class="container" style="padding:28px 0 80px">
+<div class="container" style="padding:24px 20px 80px">
   <div class="menu-toolbar">
     <div class="category-scroll" id="categoryFilters"></div>
-    <div class="diet-filters" id="dietFilters">
-      <button class="diet-btn active" data-diet="all">All Items</button>
-      <button class="diet-btn" data-diet="bestseller">⭐ Bestsellers</button>
+    <div class="menu-sub-toolbar">
+      <div class="diet-filters" id="dietFilters">
+        <button class="diet-btn active" data-diet="all">All Items</button>
+        <button class="diet-btn" data-diet="bestseller">⭐ Bestsellers</button>
+      </div>
+      <div class="menu-search"><input id="menuSearch" type="search" placeholder="Search shawarma, mojito..."/></div>
     </div>
-    <div class="menu-search"><input id="menuSearch" type="search" placeholder="Search shawarma, mojito..."/></div>
   </div>
   <div class="menu-grid" id="menuGrid"></div>
 </div>
