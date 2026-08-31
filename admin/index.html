@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#2C4E2B">
+<title>Qissa Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+<div class="grain"></div>
+<section class="login-screen" id="loginScreen">
+  <form class="login-card" id="loginForm"><img src="/assets/qissa-logo.jpeg" alt="Qissa"><span class="kicker">PRIVATE CONTROL</span><h1>Qissa Admin</h1><p>Manage live menu availability, prices and incoming orders.</p><label>Password<input id="adminPassword" type="password" autocomplete="current-password" required placeholder="Admin password"></label><button class="primary" type="submit">Enter Dashboard</button><small id="loginError"></small></form>
+</section>
+<div class="app hidden" id="adminApp">
+  <aside class="sidebar">
+    <a class="admin-brand" href="/"><img src="/assets/qissa-logo.jpeg"><div><b>QISSA</b><span>ADMIN</span></div></a>
+    <nav><button class="nav-btn active" data-view="dashboard">Overview</button><button class="nav-btn" data-view="menu">Menu</button><button class="nav-btn" data-view="orders">Orders <span id="newBadge"></span></button><button class="nav-btn" data-view="settings">Settings</button></nav>
+    <div class="side-bottom"><a href="/" target="_blank">View customer site ↗</a><button id="logoutBtn">Log out</button></div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div><span class="kicker">QISSA CONTROL ROOM</span><h2 id="viewTitle">Overview</h2></div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="soft" id="soundToggleBtn" style="font-size:0.8rem;padding:9px 14px;border-radius:14px;cursor:pointer">🔔 Sound: ON</button>
+        <div class="shop-switch"><span><i id="statusDot"></i><b id="statusText">Checking</b></span><label class="switch"><input id="cafeToggle" type="checkbox"><span></span></label></div>
+      </div>
+    </header>
+
+    <section class="view" id="view-dashboard">
+      <div class="stats" id="stats"></div>
+      <div class="panel"><div class="panel-head"><div><span class="kicker">RECENT FLOW</span><h3>Latest orders</h3></div><button class="soft" data-go="orders">See all orders</button></div><div id="recentOrders"></div></div>
+    </section>
+
+    <section class="view hidden" id="view-menu">
+      <div class="toolbar"><input id="menuAdminSearch" placeholder="Search menu..."><button class="primary" id="addItemBtn">+ Add item</button></div>
+      <div class="panel table-wrap"><table><thead><tr><th>Item</th><th>Category</th><th>Price</th><th>Availability</th><th></th></tr></thead><tbody id="menuTable"></tbody></table></div>
+    </section>
+
+    <section class="view hidden" id="view-orders">
+      <div class="toolbar" style="flex-direction:column;align-items:stretch;gap:14px">
+        <div class="order-status-tabs" id="orderStatusTabs">
+          <button class="tab-btn active" data-status="">All Orders</button>
+          <button class="tab-btn" data-status="new">🟡 New</button>
+          <button class="tab-btn" data-status="confirmed">🔵 Confirmed</button>
+          <button class="tab-btn" data-status="preparing">👨‍🍳 Kitchen</button>
+          <button class="tab-btn" data-status="ready">🔔 Ready</button>
+          <button class="tab-btn" data-status="completed">Completed</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:12px">
+          <input id="orderSearch" placeholder="Search order code, customer name, phone, table..." style="width:min(420px,100%)">
+          <button class="soft" id="refreshOrders">🔄 Refresh</button>
+        </div>
+      </div>
+      <div class="orders-grid" id="ordersGrid"></div>
+    </section>
+
+    <section class="view hidden" id="view-settings">
+      <form class="panel settings-form" id="settingsForm">
+        <div class="panel-head"><div><span class="kicker">STORE DETAILS</span><h3>Customer-facing information</h3></div></div>
+        <label>WhatsApp number<input id="setWhatsapp" placeholder="919645700585"></label>
+        <label>Address<input id="setAddress" placeholder="Qissa Cafe address"></label>
+        <label>Opening hours<input id="setHours" placeholder="Example: 12:00 PM – 11:30 PM"></label>
+        <label>Google Maps Embed URL<input id="setMapEmbed" placeholder="https://www.google.com/maps/embed?..."></label>
+        <label>Google Maps Directions Link<input id="setMapDirections" placeholder="https://maps.google.com/?q=..."></label>
+        <button class="primary" type="submit">Save settings</button>
+      </form>
+      <div class="security-note"><b>Security</b><p>Change the admin password and secret key in <code>backend/.env</code> before putting the site online.</p></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="itemModal"><div class="modal-card"><button class="x" id="closeItemModal">×</button><span class="kicker">MENU EDITOR</span><h2 id="itemModalTitle">Add item</h2><form id="itemForm"><input type="hidden" id="itemId"><div class="two"><label>Name<input id="itemName" required></label><label>Category<input id="itemCategory" required></label></div><div class="two"><label>Price (₹)<input id="itemPrice" type="number" min="0" required></label><label>Availability<select id="itemAvailability"><option value="available">Available</option><option value="low">Almost sold out</option><option value="sold_out">Sold out</option></select></label></div><label>Bestseller (⭐)<select id="itemIsBestseller"><option value="0">Standard Item</option><option value="1">⭐ Bestseller / Special</option></select></label><label>Item Image
+  <div class="img-upload">
+    <div class="img-preview" id="imgPreview"><span>No image</span><img id="imgPreviewTag" style="display:none"></div>
+    <div class="img-actions">
+      <label class="soft img-btn">📁 Upload <input type="file" id="itemImageFile" accept="image/*" hidden></label>
+      <span style="align-self:center;color:#999;font-size:.75rem">or paste URL</span>
+      <input id="itemImage" placeholder="https://...">
+    </div>
+  </div>
+</label><label>Description<textarea id="itemDescription" rows="3"></textarea></label><button class="primary" type="submit">Save item</button></form></div></div>
+<div class="toast" id="adminToast"></div>
+<iframe id="receiptPrinterFrame" style="position:fixed;width:0;height:0;border:0;visibility:hidden;"></iframe>
+<script src="/admin/admin.js"></script></body></html>

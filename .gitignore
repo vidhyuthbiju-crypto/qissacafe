@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.class
+*.log
+backend/qissa.log
+backend/.env
+.venv/
+env/
+venv/
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#2C4E2B"/>
+<title>Qissa Cafe — Every Bite Has a Story</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<div class="grain"></div><div class="cursor-glow" id="cursorGlow"></div>
+<header class="nav-wrap" id="navWrap">
+<nav class="nav container">
+<a href="#" class="brand" data-page="home"><img src="assets/qissa-logo.jpeg" alt="Qissa"/><div><strong>QISSA</strong><span>RESTO CAFE</span></div></a>
+<button class="mobile-menu-toggle" id="mobileMenuToggle" aria-expanded="false" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+<div class="nav-links" id="navLinks">
+<a href="#" data-page="home" class="active">Home</a><a href="#" data-page="menu">Menu</a><a href="#" data-page="story">Our Story</a><a href="#" data-page="visit">Visit</a>
+</div>
+<div class="nav-actions">
+  <button class="ghost-btn" id="shareSiteBtn" title="Share Qissa Cafe with friends">Share ↗</button>
+  <button class="ghost-btn" id="searchBtn">Search</button>
+  <button class="cart-btn" id="cartBtn">Cart <span id="cartCount">0</span></button>
+</div>
+</nav></header>
+<main>
+<section class="page active" id="page-home">
+<div class="hero"><div class="orb orb-a"></div><div class="orb orb-b"></div>
+<div class="hero-grid container">
+<div class="hero-copy">
+<div class="eyebrow reveal"><span class="status-dot"></span><span id="shopStatus">CHECKING...</span></div>
+<h1 class="reveal">Every bite<br><em>has a story.</em></h1>
+<p class="reveal">Crafted comfort food, chilled favourites, and late-evening cravings — served with a premium touch.</p>
+<div class="hero-actions reveal"><a href="#" class="primary-btn" data-page="menu">Explore Menu &rarr;</a><button class="secondary-btn" data-page="menu" id="heroOrderBtn">Order Now</button></div>
+<div class="hero-meta reveal"><div><span>FAST</span><small>Ordering</small></div><div><span>LIVE</span><small>Availability</small></div><div><span>DIRECT</span><small>WhatsApp</small></div></div>
+</div>
+<div class="hero-visual reveal"><div class="logo-stage"><div class="logo-halo"></div><img src="assets/qissa-logo.jpeg" alt="Qissa" class="hero-logo"/><div class="floating-chip chip-one">Freshly made</div><div class="floating-chip chip-two">100% Qissa</div></div></div>
+</div></div>
+<div class="marquee-section"><div class="marquee"><div class="marquee-track"><span>SHAWARMA</span><b>&#10022;</b><span>BROAST</span><b>&#10022;</b><span>BURGERS</span><b>&#10022;</b><span>SHAKES</span><b>&#10022;</b><span>MOJITOS</span><b>&#10022;</b><span>FALOODA</span><b>&#10022;</b><span>SHAWARMA</span><b>&#10022;</b><span>BROAST</span><b>&#10022;</b><span>BURGERS</span><b>&#10022;</b><span>SHAKES</span><b>&#10022;</b><span>MOJITOS</span><b>&#10022;</b><span>FALOODA</span><b>&#10022;</b></div></div></div>
+<div class="home-cards-section">
+  <div class="home-cards-orb home-cards-orb-1"></div>
+  <div class="home-cards-orb home-cards-orb-2"></div>
+  <div class="home-cards container">
+    <a href="#" class="home-card" data-page="menu">
+      <div class="home-card-top">
+        <span class="home-card-icon">🍽️</span>
+        <span class="home-card-arrow">&rarr;</span>
+      </div>
+      <div class="home-card-body">
+        <h3>Browse Menu</h3>
+        <p>Explore 70+ crafted items — shawarmas, burgers, shakes &amp; mojitos.</p>
+      </div>
+    </a>
+    <a href="#" class="home-card" data-page="story">
+      <div class="home-card-top">
+        <span class="home-card-icon">📖</span>
+        <span class="home-card-arrow">&rarr;</span>
+      </div>
+      <div class="home-card-body">
+        <h3>Our Story</h3>
+        <p>Crafted comfort food and the passion behind every dish we prepare.</p>
+      </div>
+    </a>
+    <a href="#" class="home-card" data-page="visit">
+      <div class="home-card-top">
+        <span class="home-card-icon">📍</span>
+        <span class="home-card-arrow">&rarr;</span>
+      </div>
+      <div class="home-card-body">
+        <h3>Visit Us</h3>
+        <p>Nilambur Road location, live opening hours, directions &amp; WhatsApp.</p>
+      </div>
+    </a>
+  </div>
+</div>
+</section>
+<section class="page" id="page-menu">
+<div class="menu-hero"><div class="container"><span class="kicker" style="color:var(--gold-2)">THE QISSA MENU</span><h2>Pick your <em>favourite.</em></h2><p>Tap + to add to cart.</p></div></div>
+<div class="container" style="padding:28px 0 80px">
+  <div class="menu-toolbar">
+    <div class="category-scroll" id="categoryFilters"></div>
+    <div class="diet-filters" id="dietFilters">
+      <button class="diet-btn active" data-diet="all">All Items</button>
+      <button class="diet-btn" data-diet="bestseller">⭐ Bestsellers</button>
+    </div>
+    <div class="menu-search"><input id="menuSearch" type="search" placeholder="Search shawarma, mojito..."/></div>
+  </div>
+  <div class="menu-grid" id="menuGrid"></div>
+</div>
+</section>
+<section class="page" id="page-story">
+<div class="story-hero"><div class="container"><span class="kicker">OUR STORY</span><h2>Not just food.<br><em>A Qissa.</em></h2><p>Built around little moments that turn into stories — quick bites with friends, evening shakes, shawarma runs.</p></div></div>
+<div class="container story-grid" style="padding:40px 0 80px">
+<div class="story-card story-main"><span class="kicker">CRAFT</span><h3>Every dish tells a tale</h3><p>From the first shawarma roll to the last sip of falooda — we obsess over flavour and freshness.</p></div>
+<div class="story-card stat-card"><span class="big-number">01</span><h3>One smooth ordering flow</h3><p>Browse, add, review, confirm and send via WhatsApp.</p></div>
+<div class="story-card stat-card"><span class="big-number">02</span><h3>Live availability</h3><p>Available / Almost sold out / Sold out — always accurate.</p></div>
+<div class="story-card stat-card"><span class="big-number">03</span><h3>Made fresh, served fast</h3><p>Hot shawarmas, chilled mojitos, crispy broasts — all day.</p></div>
+</div>
+</section>
+<section class="page" id="page-visit">
+<div class="visit-hero"><div class="container"><span class="kicker">VISIT QISSA</span><h2>Your next craving<br><em>starts here.</em></h2></div></div>
+<div class="container" style="padding:30px 0 80px">
+  <div class="visit-layout">
+    <div class="visit-card">
+      <div class="visit-info">
+        <div><span>Location</span><strong id="visitAddress">Qissa Resto Cafe, Nilambur Road, Kerala</strong></div>
+        <div><span>Opening Hours</span><strong id="visitHours">12:00 PM – 11:30 PM</strong></div>
+        <div><span>WhatsApp</span><strong id="visitWhatsapp">+91 96457 00585</strong></div>
+      </div>
+      <div class="visit-cta">
+        <a href="https://maps.app.goo.gl/5v2gcWyZ5xAjXJHV6?g_st=iw" id="visitDirectionsBtn" target="_blank" rel="noopener" class="primary-btn directions-btn">📍 Get Directions in Google Maps &rarr;</a>
+        <a href="#" class="secondary-btn" data-page="menu">Browse Menu &rarr;</a>
+      </div>
+    </div>
+    <div class="map-card">
+      <iframe id="visitMapFrame" title="Qissa Cafe Location" src="https://maps.google.com/maps?q=11.1116412,76.2789462&t=&z=16&ie=UTF8&iwloc=&output=embed" width="100%" height="290" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </div>
+</div>
+</section>
+</main>
+<footer><div class="container footer-inner"><div class="brand footer-brand"><img src="assets/qissa-logo.jpeg" alt="Qissa"/><div><strong>QISSA</strong><span>RESTO CAFE</span></div></div><p>&copy; 2026 Qissa Cafe. Every bite has a story.</p><div class="footer-links"><a href="/admin">Admin</a><a href="#" data-page="home">Back to home &uarr;</a></div></div></footer>
+<aside class="cart-drawer" id="cartDrawer"><div class="drawer-head"><div><span class="kicker">YOUR ORDER</span><h3>Qissa Cart</h3></div><button class="icon-btn" id="closeCart">&times;</button></div><div class="cart-items" id="cartItems"></div><div class="cart-footer"><div class="subtotal-row"><span>Subtotal</span><strong id="cartSubtotal">Rs0</strong></div><button class="primary-btn checkout-btn" id="checkoutBtn">Continue to Checkout</button><small>Order saved before WhatsApp opens.</small></div></aside>
+<div class="backdrop" id="backdrop"></div>
+<div class="checkout-modal" id="checkoutModal"><div class="checkout-card"><button class="icon-btn checkout-close" id="closeCheckout">&times;</button><span class="kicker">FINAL STEP</span><h2>Confirm your order</h2><form id="checkoutForm"><div class="field-grid"><label>Your name<input id="customerName" required placeholder="Name"/></label><label>Phone<input id="customerPhone" required placeholder="10-digit number" pattern="[6-9][0-9]{9}"/></label></div><label>Order type<select id="orderType"><option value="Takeaway">Takeaway (Pickup)</option><option value="Dine-in">Dine-in (Table)</option><option value="Delivery">Home Delivery</option></select></label><div id="tableGroup" style="display:none"><label>Table number<input id="tableNumber" placeholder="e.g. Table 4"/></label></div><div id="deliveryGroup" style="display:none"><label>Delivery address &amp; landmark<textarea id="deliveryAddress" rows="2" placeholder="Full address, building/flat name, landmark"></textarea></label></div><label>Special instructions<textarea id="orderNotes" rows="2" placeholder="Less spicy, no onion..." maxlength="500"></textarea></label><div class="checkout-summary" id="checkoutSummary"></div><button type="submit" class="primary-btn full-btn" id="confirmOrderBtn">Place Order</button></form></div></div>
+
+<!-- Live Order Status & Tracking Modal -->
+<div class="order-tracking-modal" id="orderTrackingModal">
+  <div class="order-tracking-card">
+    <button class="icon-btn order-tracking-close" id="closeOrderTracking">&times;</button>
+    <div class="tracking-header">
+      <span class="kicker">LIVE ORDER STATUS</span>
+      <h2 id="trackingOrderCode">#Q000001</h2>
+      <p id="trackingSubtitle">Your order is saved and cooking fresh!</p>
+    </div>
+
+    <!-- Stepper Tracker -->
+    <div class="order-stepper" id="orderStepper">
+      <div class="step active" data-step="new">
+        <div class="step-circle">1</div>
+        <div class="step-label"><strong>Placed</strong><small>Received</small></div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" data-step="confirmed">
+        <div class="step-circle">2</div>
+        <div class="step-label"><strong>Confirmed</strong><small>Accepted</small></div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" data-step="preparing">
+        <div class="step-circle">3</div>
+        <div class="step-label"><strong>Cooking</strong><small>In Kitchen</small></div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" data-step="ready">
+        <div class="step-circle">4</div>
+        <div class="step-label"><strong>Ready</strong><small>Pickup/Transit</small></div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step" data-step="completed">
+        <div class="step-circle">5</div>
+        <div class="step-label"><strong>Done</strong><small>Enjoy!</small></div>
+      </div>
+    </div>
+
+    <!-- Live Status Pill -->
+    <div class="live-status-banner" id="liveStatusBanner">
+      <div class="pulse-dot"></div>
+      <span id="liveStatusText">Order placed — awaiting kitchen confirmation</span>
+    </div>
+
+    <!-- Order Items Summary -->
+    <div class="tracking-details" id="trackingDetails"></div>
+
+    <!-- Action Buttons -->
+    <div class="tracking-actions">
+      <a href="#" id="trackingWhatsAppBtn" target="_blank" rel="noopener" class="primary-btn whatsapp-action-btn">💬 Send Summary on WhatsApp</a>
+      <a href="tel:+919645700585" id="trackingCallBtn" class="secondary-btn call-action-btn">📞 Call Cafe</a>
+      <button class="soft-btn" id="trackingNewOrderBtn" style="padding:12px 18px;border-radius:14px;cursor:pointer;border:0;background:rgba(58,99,57,0.1);font-weight:700;color:var(--green)">+ Add More Items</button>
+    </div>
+  </div>
+</div>
+
+<div class="mobile-cart-bar" id="mobileCartBar" style="display:none"><div><strong id="mobileCartText">0 items</strong> <span id="mobileCartTotal">Rs 0</span></div><button class="primary-btn" id="mobileCartBtn" style="min-height:44px;padding:0 18px">View Cart</button></div>
+<div class="toast" id="toast"><span class="toast-icon" id="toastIcon">&#10003;</span><span id="toastText">Added to cart</span></div>
+<script src="app.js"></script>
+</body>
+</html>

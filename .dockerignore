@@ -1,0 +1,11 @@
+.venv
+.venv*
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+backend/qissa.log
+.DS_Store
+Thumbs.db
