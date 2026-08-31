@@ -263,11 +263,22 @@ function removeItem(id) {
 function cartTotal() { return state.cart.reduce((sum, x) => sum + x.price * x.qty, 0); }
 function cartQuantity() { return state.cart.reduce((sum, x) => sum + x.qty, 0); }
 
-function updateMobileBar(){
-  const b=document.getElementById("mobileCartBar"), tx=document.getElementById("mobileCartText"), tt=document.getElementById("mobileCartTotal");
-  if(!b) return;
-  const n=cartQuantity();
-  if(n>0){ b.style.display="flex"; tx.textContent=n+" item"+(n>1?"s":""); tt.textContent=money(cartTotal()); } else b.style.display="none";
+let currentPage = "home";
+
+function updateMobileBar() {
+  const b = document.getElementById("mobileCartBar"),
+        tx = document.getElementById("mobileCartText"),
+        tt = document.getElementById("mobileCartTotal");
+  if (!b) return;
+  const n = cartQuantity();
+  const isMenuPage = currentPage === "menu" || document.getElementById("page-menu")?.classList.contains("active");
+  if (n > 0 && isMenuPage) {
+    b.style.display = "flex";
+    if (tx) tx.textContent = n + " item" + (n > 1 ? "s" : "");
+    if (tt) tt.textContent = money(cartTotal());
+  } else {
+    b.style.display = "none";
+  }
 }
 document.getElementById("mobileCartBtn")?.addEventListener("click",openCart);
 function renderCart() {
@@ -762,13 +773,15 @@ if (canHover && !reduceMotion) {
 }
 
 // Page routing
-function showPage(p){
-  document.querySelectorAll(".page").forEach(s=>s.classList.remove("active"));
-  const t=document.getElementById("page-"+p);
-  if(t) t.classList.add("active");
-  document.querySelectorAll(".nav-links a").forEach(a=>a.classList.toggle("active",a.dataset.page===p));
-  window.scrollTo({top:0,behavior:"smooth"});
-  if(p==="menu") renderMenu();
+function showPage(p) {
+  currentPage = p;
+  document.querySelectorAll(".page").forEach(s => s.classList.remove("active"));
+  const t = document.getElementById("page-" + p);
+  if (t) t.classList.add("active");
+  document.querySelectorAll(".nav-links a").forEach(a => a.classList.toggle("active", a.dataset.page === p));
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (p === "menu") renderMenu();
+  updateMobileBar();
 }
 document.addEventListener("click",e=>{
   const a=e.target.closest("[data-page]");
