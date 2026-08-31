@@ -563,7 +563,7 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   box-shadow: 0 24px 55px rgba(28,38,20,0.15), inset 0 2px 3px rgba(255,255,255,1);
 }
 .story-main {
-  grid-row: span 2;
+  grid-row: span 3;
   min-height: 520px;
   display: flex;
   flex-direction: column;
@@ -573,6 +573,35 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   color: white;
   box-shadow: 0 24px 60px rgba(20,32,18,0.24), inset 0 1px 0 rgba(255,255,255,0.4);
 }
+.story-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.story-logo-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+  border: 2px solid rgba(255,255,255,0.2);
+}
+.story-logo-brand strong {
+  font-family: var(--font-accent);
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: white;
+  display: block;
+}
+.story-logo-brand span {
+  font-family: var(--font-accent);
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  color: var(--gold-2);
+  font-weight: 700;
+}
 .story-main .kicker { color: var(--gold-2); }
 .story-main h2 em { color: var(--gold-2); }
 .story-main p { max-width: 540px; color: rgba(255,255,255,.82); line-height: 1.8; }
@@ -580,6 +609,22 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
 .big-number { font-family: var(--font-accent); font-weight: 900; font-size: 3.4rem; color: rgba(58,99,57,.22); letter-spacing: -0.04em; }
 .stat-card h3 { font-family: var(--font-items); font-size: 1.25rem; font-weight: 800; margin: 10px 0 8px; color: var(--ink); letter-spacing: -0.015em; }
 .stat-card p { color: #585D4D; line-height: 1.65; }
+
+@media (max-width: 900px) {
+  .story-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .story-main {
+    grid-row: auto;
+    min-height: auto;
+    padding: 30px 22px;
+  }
+  .stat-card {
+    min-height: auto;
+    padding: 24px 20px;
+  }
+}
 
 .visit-card {
   border-radius: 30px;
