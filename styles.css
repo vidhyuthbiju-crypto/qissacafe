@@ -1408,21 +1408,9 @@ textarea { resize: vertical; }
     display: none;
   }
   
-  /* Mobile Menu Page & Hero */
-  .menu-hero {
-    padding: 58px 0 10px !important;
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-  .menu-hero h2 {
-    font-size: 1.60rem !important;
-    margin: 2px 0 4px !important;
-  }
-  .menu-hero p {
-    font-size: 0.80rem !important;
-    margin: 0 !important;
+  /* Mobile Menu Page - Instant Food Access */
+  #page-menu .menu-hero {
+    display: none !important;
   }
   .story-hero, .visit-hero {
     padding: 68px 0 20px !important;
@@ -1435,7 +1423,7 @@ textarea { resize: vertical; }
   }
   
   .menu-page-container {
-    padding: 8px 12px 90px !important;
+    padding: 64px 12px 90px !important;
   }
   
   /* Menu Toolbar - Clean natural flow with tight zero-gap margins */
