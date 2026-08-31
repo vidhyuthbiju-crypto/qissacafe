@@ -80,7 +80,7 @@ function categories() {
   const menuCats = [...new Set(menu.map(item => item.category))];
   const ordered = CATEGORY_ORDER.filter(cat => menuCats.includes(cat));
   const remaining = menuCats.filter(cat => !CATEGORY_ORDER.includes(cat));
-  return ["All", ...ordered, ...remaining];
+  return ["🔥 Popular", "All", ...ordered, ...remaining];
 }
 
 // API with timeout and better error handling
@@ -118,7 +118,6 @@ async function loadStore() {
     syncCartWithMenu();
     applyStoreStatus();
     renderCategories();
-    initDietFilters();
     renderMenu();
     renderCart();
   } catch (err) {
@@ -163,7 +162,7 @@ function formatWhatsapp(num) {
 function renderCategories() {
   categoryFilters.innerHTML = categories().map(cat => `
     <button class="category-btn ${state.category === cat ? "active" : ""}" data-category="${escapeHtml(cat)}" aria-pressed="${state.category === cat}">
-      ${cat === "All" ? "All" : escapeHtml(cat)}
+      ${escapeHtml(cat)}
     </button>
   `).join("");
   $$(".category-btn").forEach(btn => btn.addEventListener("click", () => {
@@ -174,29 +173,24 @@ function renderCategories() {
   }));
 }
 
-function initDietFilters() {
-  $$(".diet-btn").forEach(btn => {
-    btn.onclick = () => {
-      state.dietFilter = btn.dataset.diet;
-      $$(".diet-btn").forEach(b => b.classList.toggle("active", b.dataset.diet === state.dietFilter));
-      renderMenu();
-    };
-  });
-}
-
 function filteredMenu() {
   return menu.filter(item => {
-    const catMatch = state.category === "All" || item.category === state.category;
+    let catMatch = false;
+    if (state.category === "🔥 Popular" || state.category === "Popular") {
+      catMatch = Boolean(item.is_bestseller);
+    } else if (state.category === "All") {
+      catMatch = true;
+    } else {
+      catMatch = item.category === state.category;
+    }
     const q = state.query.trim().toLowerCase();
-    const searchMatch = !q || item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q);
-    let dietMatch = true;
-    if (state.dietFilter === "bestseller") dietMatch = Boolean(item.is_bestseller);
-    return catMatch && searchMatch && dietMatch;
+    const searchMatch = !q || item.name.toLowerCase().includes(q) || item.category.toLowerCase().includes(q) || (item.description && item.description.toLowerCase().includes(q));
+    return catMatch && searchMatch;
   });
 }
 
 function availabilityMeta(item) {
-  if (item.availability === "sold_out") return { label: "Sold Out", cls: "sold", showBadge: true, disabled: true };
+  if (item.availability === "sold_out") return { label: "Sold out", cls: "sold", showBadge: true, disabled: true };
   if (item.availability === "low") return { label: "Few left", cls: "low", showBadge: true, disabled: false };
   return { label: "", cls: "", showBadge: false, disabled: false };
 }
@@ -204,7 +198,7 @@ function availabilityMeta(item) {
 function renderMenu() {
   const items = filteredMenu();
   if (!items.length) {
-    menuGrid.innerHTML = `<div class="cart-empty" style="grid-column:1/-1"><div><span class="no-results-icon">🔎</span><h3>No menu items found</h3><p>Try a different category or search.</p></div></div>`;
+    menuGrid.innerHTML = `<div class="cart-empty" style="grid-column:1/-1"><div><span class="no-results-icon">🔎</span><h3>No menu items found</h3><p>Try a different category or search term.</p></div></div>`;
     return;
   }
   menuGrid.innerHTML = items.map((item, i) => {
@@ -220,17 +214,18 @@ function renderMenu() {
          </div>`
       : `<button class="add-btn menu-add-btn" data-id="${item.id}" ${disabled ? "disabled" : ""} aria-label="Add ${escapeHtml(item.name)} to cart">${disabled ? "Sold" : "+"}</button>`;
 
-    const availabilityBadge = a.showBadge
+    const isPopular = Boolean(item.is_bestseller);
+    const badgeHtml = a.showBadge
       ? `<span class="availability ${a.cls}">${a.label}</span>`
-      : (!state.cafeOpen ? `<span class="availability sold">Closed</span>` : '');
+      : (isPopular && state.category !== "🔥 Popular" ? `<span class="bestseller-chip">★ Popular</span>` : (!state.cafeOpen ? `<span class="availability sold">Closed</span>` : ''));
 
     return `
-      <article class="menu-card card-in ${a.disabled ? "soldout" : ""} ${a.cls === "low" ? "low-stock" : ""}" style="animation-delay:${reduceMotion ? 0 : (i % 12) * 45}ms">
+      <article class="menu-card card-in ${a.disabled ? "soldout" : ""} ${a.cls === "low" ? "low-stock" : ""}" style="animation-delay:${reduceMotion ? 0 : (i % 8) * 25}ms">
         <div class="menu-card-top-content">
           ${item.image ? `<img class="menu-thumb" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.style.display='none'">` : `<div class="icon-wrap"><span class="menu-icon">${CATEGORY_ICONS[item.category]||"🍽️"}</span></div>`}
           <div class="menu-card-header">
-            ${item.is_bestseller ? `<span class="bestseller-chip">⭐ Bestseller</span>` : `<span class="item-category">${escapeHtml(item.category)}</span>`}
-            ${availabilityBadge}
+            ${badgeHtml}
+            <span class="item-category">${escapeHtml(item.category)}</span>
           </div>
           <h3>${escapeHtml(item.name)}</h3>
           ${item.description ? `<p class="menu-desc">${escapeHtml(item.description)}</p>` : ''}
@@ -295,7 +290,8 @@ function updateMobileBar() {
     b.classList.remove("bar-visible");
   }
 }
-document.getElementById("mobileCartBtn")?.addEventListener("click", openCart);
+document.getElementById("mobileCartBar")?.addEventListener("click", openCart);
+document.getElementById("mobileCartBtn")?.addEventListener("click", (e) => { e.stopPropagation(); openCart(); });
 function renderCart() {
   const newCount = cartQuantity();
   const countChanged = cartCount.textContent !== String(newCount);
