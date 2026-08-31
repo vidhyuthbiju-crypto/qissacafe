@@ -602,6 +602,10 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
 footer { padding: 36px 0 50px; }
 .footer-inner { border-top: 1px solid var(--border); padding-top: 28px; display: flex; justify-content: space-between; align-items: center; gap: 20px; color: var(--muted); }
 .footer-brand img { width: 42px; height: 42px; }
+.footer-center { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.footer-center p { margin: 0; font-family: var(--font-sans); font-size: 0.88rem; color: var(--muted); }
+.creator-credit { font-family: var(--font-sans); font-size: 0.82rem; color: #656C5A; font-weight: 500; letter-spacing: 0.01em; }
+.creator-credit strong { color: var(--green); font-weight: 750; }
 
 .cart-drawer {
   position: fixed; z-index: 80; right: 14px; top: 14px; bottom: 14px; width: min(440px, calc(100% - 28px));
@@ -1704,8 +1708,13 @@ textarea { resize: vertical; }
   }
   .footer-inner {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    text-align: center;
     gap: 14px;
+  }
+  .footer-center {
+    align-items: center;
+    text-align: center;
   }
   .toast {
     bottom: calc(16px + env(safe-area-inset-bottom));
