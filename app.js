@@ -162,11 +162,15 @@ function formatWhatsapp(num) {
 
 function renderCategories() {
   categoryFilters.innerHTML = categories().map(cat => `
-    <button class="category-btn ${state.category === cat ? "active" : ""}" data-category="${escapeHtml(cat)}" aria-pressed="${state.category === cat}">${escapeHtml(cat)}</button>
+    <button class="category-btn ${state.category === cat ? "active" : ""}" data-category="${escapeHtml(cat)}" aria-pressed="${state.category === cat}">
+      ${cat === "All" ? "All" : escapeHtml(cat)}
+    </button>
   `).join("");
   $$(".category-btn").forEach(btn => btn.addEventListener("click", () => {
     state.category = btn.dataset.category;
-    renderCategories(); renderMenu();
+    renderCategories();
+    renderMenu();
+    btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }));
 }
 
@@ -192,12 +196,59 @@ function filteredMenu() {
 }
 
 function availabilityMeta(item) {
-  if (item.availability === "sold_out") return { label: "SOLD OUT", cls: "sold", disabled: true };
-  if (item.availability === "low") return { label: "ALMOST SOLD OUT", cls: "low", disabled: false };
-  return { label: "AVAILABLE", cls: "", disabled: false };
+  if (item.availability === "sold_out") return { label: "Sold Out", cls: "sold", showBadge: true, disabled: true };
+  if (item.availability === "low") return { label: "Few left", cls: "low", showBadge: true, disabled: false };
+  return { label: "", cls: "", showBadge: false, disabled: false };
+}
+
+function renderBestsellerHighlight() {
+  const highlightContainer = document.getElementById("bestsellerHighlight");
+  const carousel = document.getElementById("bestsellerCarousel");
+  if (!highlightContainer || !carousel) return;
+
+  const showHighlight = (state.category === "All") && !state.query.trim() && state.dietFilter === "all";
+  if (!showHighlight) {
+    highlightContainer.style.display = "none";
+    return;
+  }
+
+  const bestsellers = menu.filter(x => x.is_bestseller).slice(0, 6);
+  if (!bestsellers.length) {
+    highlightContainer.style.display = "none";
+    return;
+  }
+
+  highlightContainer.style.display = "block";
+  carousel.innerHTML = bestsellers.map(item => {
+    const inCart = state.cart.find(x => x.id === item.id);
+    const disabled = !state.cafeOpen || item.availability === "sold_out";
+    const actionBtn = (inCart && inCart.qty > 0 && !disabled)
+      ? `<div class="card-qty-ctrl">
+           <button class="qty-btn dec-btn" onclick="changeQty(${item.id}, -1)" aria-label="Decrease quantity">−</button>
+           <span class="card-qty-num">${inCart.qty}</span>
+           <button class="qty-btn inc-btn" onclick="changeQty(${item.id}, 1)" aria-label="Increase quantity">+</button>
+         </div>`
+      : `<button class="add-btn highlight-add-btn" data-id="${item.id}" ${disabled ? "disabled" : ""} aria-label="Add ${escapeHtml(item.name)} to cart">${disabled ? "Sold" : "+"}</button>`;
+
+    return `
+      <div class="bestseller-item">
+        ${item.image ? `<img class="bestseller-thumb" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.style.display='none'">` : `<div class="bestseller-icon">${CATEGORY_ICONS[item.category]||"⭐"}</div>`}
+        <div class="bestseller-item-info">
+          <h4>${escapeHtml(item.name)}</h4>
+          <div class="bestseller-item-bottom">
+            <span class="price">${money(item.price)}</span>
+            ${actionBtn}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  $$(".highlight-add-btn").forEach(btn => btn.addEventListener("click", () => addToCart(Number(btn.dataset.id), btn)));
 }
 
 function renderMenu() {
+  renderBestsellerHighlight();
   const items = filteredMenu();
   if (!items.length) {
     menuGrid.innerHTML = `<div class="cart-empty" style="grid-column:1/-1"><div><span class="no-results-icon">🔎</span><h3>No menu items found</h3><p>Try a different category or search.</p></div></div>`;
@@ -214,18 +265,22 @@ function renderMenu() {
            <span class="card-qty-num">${inCart.qty}</span>
            <button class="qty-btn inc-btn" onclick="changeQty(${item.id}, 1)" aria-label="Increase quantity">+</button>
          </div>`
-      : `<button class="add-btn" data-id="${item.id}" ${disabled ? "disabled" : ""} aria-label="Add ${escapeHtml(item.name)} to cart">+</button>`;
+      : `<button class="add-btn menu-add-btn" data-id="${item.id}" ${disabled ? "disabled" : ""} aria-label="Add ${escapeHtml(item.name)} to cart">${disabled ? "Sold" : "+"}</button>`;
+
+    const availabilityBadge = a.showBadge
+      ? `<span class="availability ${a.cls}">${a.label}</span>`
+      : (!state.cafeOpen ? `<span class="availability sold">Closed</span>` : '');
 
     return `
       <article class="menu-card card-in ${a.disabled ? "soldout" : ""} ${a.cls === "low" ? "low-stock" : ""}" style="animation-delay:${reduceMotion ? 0 : (i % 12) * 45}ms">
-        <div>
+        <div class="menu-card-top-content">
           ${item.image ? `<img class="menu-thumb" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.style.display='none'">` : `<div class="icon-wrap"><span class="menu-icon">${CATEGORY_ICONS[item.category]||"🍽️"}</span></div>`}
-          ${item.is_bestseller ? `<div class="card-badges"><span class="bestseller-chip">⭐ Bestseller</span></div>` : ''}
-          <div class="menu-card-top">
-            <span class="item-category">${escapeHtml(item.category)}</span>
-            <span class="availability ${a.cls}">${!state.cafeOpen ? "CAFE CLOSED" : a.label}</span>
+          <div class="menu-card-header">
+            ${item.is_bestseller ? `<span class="bestseller-chip">⭐ Bestseller</span>` : `<span class="item-category">${escapeHtml(item.category)}</span>`}
+            ${availabilityBadge}
           </div>
-          <h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.description || "")}</p>
+          <h3>${escapeHtml(item.name)}</h3>
+          ${item.description ? `<p class="menu-desc">${escapeHtml(item.description)}</p>` : ''}
         </div>
         <div class="menu-card-bottom">
           <span class="price">${money(item.price)}</span>
@@ -233,7 +288,7 @@ function renderMenu() {
         </div>
       </article>`;
   }).join("");
-  $$(".add-btn").forEach(btn => btn.addEventListener("click", () => addToCart(Number(btn.dataset.id), btn)));
+  $$(".menu-add-btn").forEach(btn => btn.addEventListener("click", () => addToCart(Number(btn.dataset.id), btn)));
 }
 
 function addToCart(id, btnEl) {
@@ -273,14 +328,21 @@ function updateMobileBar() {
   const n = cartQuantity();
   const isMenuPage = currentPage === "menu" || document.getElementById("page-menu")?.classList.contains("active");
   if (n > 0 && isMenuPage) {
+    const wasHidden = b.style.display === "none" || !b.classList.contains("bar-visible");
     b.style.display = "flex";
+    if (wasHidden && !reduceMotion) {
+      b.classList.add("bar-entering");
+      setTimeout(() => b.classList.remove("bar-entering"), 450);
+    }
+    b.classList.add("bar-visible");
     if (tx) tx.textContent = n + " item" + (n > 1 ? "s" : "");
     if (tt) tt.textContent = money(cartTotal());
   } else {
     b.style.display = "none";
+    b.classList.remove("bar-visible");
   }
 }
-document.getElementById("mobileCartBtn")?.addEventListener("click",openCart);
+document.getElementById("mobileCartBtn")?.addEventListener("click", openCart);
 function renderCart() {
   const newCount = cartQuantity();
   const countChanged = cartCount.textContent !== String(newCount);
@@ -375,14 +437,23 @@ async function openCheckout() {
   if (!await validateCartBeforeCheckout()) return;
   cartDrawer.classList.remove("open");
   renderCheckoutSummary();
+
+  const savedName = localStorage.getItem("qissaCustomerName") || "";
+  const savedPhone = localStorage.getItem("qissaCustomerPhone") || "";
+  if (savedName && $("#customerName")) $("#customerName").value = savedName;
+  if (savedPhone && $("#customerPhone")) $("#customerPhone").value = savedPhone;
+
+  setOrderType($("#orderType")?.value || "Dine-in");
+
   checkoutModal.classList.add("show");
   backdrop.classList.add("show");
 
-  // Focus first input
+  // Focus first appropriate input
   setTimeout(() => {
     const nameInput = $("#customerName");
-    if (nameInput) nameInput.focus();
-  }, 100);
+    if (nameInput && !nameInput.value) nameInput.focus();
+    else $("#tableNumber")?.focus();
+  }, 120);
 }
 
 function renderCheckoutSummary() {
@@ -426,24 +497,39 @@ backdrop.addEventListener("click", closeOverlays);
 $("#menuSearch").addEventListener("input", e => debouncedSearch(e.target.value));
 
 
-// Keyboard accessibility for modals
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    if (checkoutModal.classList.contains("show") || cartDrawer.classList.contains("open")) {
-      closeOverlays();
-    }
-  }
-});
+// Order Type Tabs switching
+function setOrderType(type) {
+  const hiddenInput = $("#orderType");
+  if (hiddenInput) hiddenInput.value = type;
 
-// Dynamic Order Type toggling
-$("#orderType")?.addEventListener("change", (e) => {
-  const val = e.target.value;
-  const tableGrp = $("#tableGroup");
-  const deliveryGrp = $("#deliveryGroup");
-  if (tableGrp) tableGrp.style.display = val === "Dine-in" ? "block" : "none";
-  if (deliveryGrp) deliveryGrp.style.display = val === "Delivery" ? "block" : "none";
-  if (val === "Dine-in") setTimeout(() => $("#tableNumber")?.focus(), 100);
-  if (val === "Delivery") setTimeout(() => $("#deliveryAddress")?.focus(), 100);
+  $$("#orderTypeTabs .order-type-tab").forEach(tab => {
+    tab.classList.toggle("active", tab.dataset.type === type);
+  });
+
+  const dineInGrp = $("#dineInFields");
+  const phoneGrp = $("#phoneFields");
+  const deliveryGrp = $("#deliveryFields");
+
+  if (type === "Dine-in") {
+    if (dineInGrp) dineInGrp.style.display = "block";
+    if (phoneGrp) phoneGrp.style.display = "none";
+    if (deliveryGrp) deliveryGrp.style.display = "none";
+    setTimeout(() => $("#tableNumber")?.focus(), 80);
+  } else if (type === "Takeaway") {
+    if (dineInGrp) dineInGrp.style.display = "none";
+    if (phoneGrp) phoneGrp.style.display = "block";
+    if (deliveryGrp) deliveryGrp.style.display = "none";
+    setTimeout(() => $("#customerPhone")?.focus(), 80);
+  } else if (type === "Delivery") {
+    if (dineInGrp) dineInGrp.style.display = "none";
+    if (phoneGrp) phoneGrp.style.display = "block";
+    if (deliveryGrp) deliveryGrp.style.display = "block";
+    setTimeout(() => $("#customerPhone")?.focus(), 80);
+  }
+}
+
+$$("#orderTypeTabs .order-type-tab").forEach(tab => {
+  tab.addEventListener("click", () => setOrderType(tab.dataset.type));
 });
 
 // Order submission with validation and live tracking
@@ -574,32 +660,44 @@ $("#trackingNewOrderBtn")?.addEventListener("click", closeOverlays);
 
 $("#checkoutForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const submitBtn = $("#checkoutForm button[type='submit']");
+  const submitBtn = $("#confirmOrderBtn");
   const name = $("#customerName").value.trim();
-  const phone = $("#customerPhone").value.trim();
-  const orderType = $("#orderType").value;
+  const orderType = $("#orderType").value || "Dine-in";
+  const phone = $("#customerPhone") ? $("#customerPhone").value.trim() : "";
   const tableNumber = $("#tableNumber") ? $("#tableNumber").value.trim() : "";
   const deliveryAddress = $("#deliveryAddress") ? $("#deliveryAddress").value.trim() : "";
-  const notes = $("#orderNotes").value.trim();
+  const landmark = $("#deliveryLandmark") ? $("#deliveryLandmark").value.trim() : "";
+  const notes = $("#orderNotes") ? $("#orderNotes").value.trim() : "";
 
-  if (!name || !phone || !state.cart.length) return;
+  if (!name || !state.cart.length) return;
 
-  if (!validatePhone(phone)) {
-    showToast("Please enter a valid 10-digit mobile number", "!");
-    $("#customerPhone").focus();
-    return;
+  if (orderType === "Dine-in") {
+    if (!tableNumber) {
+      showToast("Please enter your Table Number", "!");
+      $("#tableNumber")?.focus();
+      return;
+    }
+  } else {
+    if (!phone || !validatePhone(phone)) {
+      showToast("Please enter a valid 10-digit mobile number", "!");
+      $("#customerPhone")?.focus();
+      return;
+    }
   }
 
   if (orderType === "Delivery" && !deliveryAddress) {
-    showToast("Please enter your delivery address & landmark", "!");
+    showToast("Please enter your delivery address", "!");
     $("#deliveryAddress")?.focus();
     return;
   }
 
   if (!state.cafeOpen) {
-    showToast("Qissa is currently closed", "!");
+    showToast("Qissa is currently closed for orders", "!");
     return;
   }
+
+  const fullDeliveryAddress = landmark ? `${deliveryAddress} (Landmark: ${landmark})` : deliveryAddress;
+  const effectivePhone = (orderType === "Dine-in" && !phone) ? `Table ${tableNumber}` : phone;
 
   const originalText = submitBtn.textContent;
   submitBtn.disabled = true;
@@ -610,10 +708,10 @@ $("#checkoutForm").addEventListener("submit", async (e) => {
       method: "POST",
       body: JSON.stringify({
         customer_name: name,
-        phone,
+        phone: effectivePhone,
         order_type: orderType,
         table_number: tableNumber,
-        delivery_address: deliveryAddress,
+        delivery_address: fullDeliveryAddress,
         notes,
         items: state.cart.map(x => ({ id: x.id, qty: x.qty }))
       }),
@@ -622,7 +720,7 @@ $("#checkoutForm").addEventListener("submit", async (e) => {
 
     // Save customer info for repeat visits
     localStorage.setItem("qissaCustomerName", name);
-    localStorage.setItem("qissaCustomerPhone", phone);
+    if (phone) localStorage.setItem("qissaCustomerPhone", phone);
     localStorage.setItem("qissaActiveOrder", JSON.stringify(result));
 
     // Clear cart
@@ -633,10 +731,7 @@ $("#checkoutForm").addEventListener("submit", async (e) => {
     updateMobileBar();
 
     $("#checkoutForm").reset();
-    const tableGrp = $("#tableGroup");
-    const deliveryGrp = $("#deliveryGroup");
-    if (tableGrp) tableGrp.style.display = "none";
-    if (deliveryGrp) deliveryGrp.style.display = "none";
+    setOrderType("Dine-in");
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
 
@@ -644,10 +739,9 @@ $("#checkoutForm").addEventListener("submit", async (e) => {
     openOrderTracking(result);
 
   } catch (err) {
-    showToast(err.message, "!");
+    showToast(err.message || "Failed to place order. Please try again.", "!");
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
-    loadStore();
   }
 });
 

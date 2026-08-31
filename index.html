@@ -79,17 +79,25 @@
 </div>
 </section>
 <section class="page" id="page-menu">
-<div class="menu-hero"><div class="container"><span class="kicker" style="color:var(--gold-2)">THE QISSA MENU</span><h2>Pick your <em>favourite.</em></h2><p>Tap + to add to cart.</p></div></div>
-<div class="container" style="padding:24px 20px 80px">
-  <div class="menu-toolbar">
+<div class="menu-hero"><div class="container"><span class="kicker" style="color:var(--gold-2)">THE QISSA MENU</span><h2>Pick your <em>favourite.</em></h2><p>Freshly prepared • Fast served</p></div></div>
+<div class="container" style="padding:16px 14px 96px">
+  <div class="menu-toolbar" id="stickyMenuToolbar">
     <div class="category-scroll" id="categoryFilters"></div>
     <div class="menu-sub-toolbar">
       <div class="diet-filters" id="dietFilters">
         <button class="diet-btn active" data-diet="all">All Items</button>
         <button class="diet-btn" data-diet="bestseller">⭐ Bestsellers</button>
       </div>
-      <div class="menu-search"><input id="menuSearch" type="search" placeholder="Search shawarma, mojito..."/></div>
+      <div class="menu-search"><input id="menuSearch" type="search" placeholder="🔍 Search shawarma, mojito, shake..."/></div>
     </div>
+  </div>
+  <!-- Popular / Bestsellers Highlight Strip (Shown when on All category) -->
+  <div class="bestseller-highlight" id="bestsellerHighlight" style="display:none">
+    <div class="bestseller-highlight-head">
+      <h3>⭐ Popular Picks</h3>
+      <small>Most loved by customers</small>
+    </div>
+    <div class="bestseller-carousel" id="bestsellerCarousel"></div>
   </div>
   <div class="menu-grid" id="menuGrid"></div>
 </div>
@@ -128,7 +136,43 @@
 <footer><div class="container footer-inner"><div class="brand footer-brand"><img src="assets/qissa-logo.jpeg" alt="Qissa"/><div><strong>QISSA</strong><span>RESTO CAFE</span></div></div><p>&copy; 2026 Qissa Cafe. Every bite has a story.</p><div class="footer-links"><a href="/admin">Admin</a><a href="#" data-page="home">Back to home &uarr;</a></div></div></footer>
 <aside class="cart-drawer" id="cartDrawer"><div class="drawer-head"><div><span class="kicker">YOUR ORDER</span><h3>Qissa Cart</h3></div><button class="icon-btn" id="closeCart">&times;</button></div><div class="cart-items" id="cartItems"></div><div class="cart-footer"><div class="subtotal-row"><span>Subtotal</span><strong id="cartSubtotal">Rs0</strong></div><button class="primary-btn checkout-btn" id="checkoutBtn">Continue to Checkout</button><small>Order saved before WhatsApp opens.</small></div></aside>
 <div class="backdrop" id="backdrop"></div>
-<div class="checkout-modal" id="checkoutModal"><div class="checkout-card"><button class="icon-btn checkout-close" id="closeCheckout">&times;</button><span class="kicker">FINAL STEP</span><h2>Confirm your order</h2><form id="checkoutForm"><div class="field-grid"><label>Your name<input id="customerName" required placeholder="Name"/></label><label>Phone<input id="customerPhone" required placeholder="10-digit number" pattern="[6-9][0-9]{9}"/></label></div><label>Order type<select id="orderType"><option value="Takeaway">Takeaway (Pickup)</option><option value="Dine-in">Dine-in (Table)</option><option value="Delivery">Home Delivery</option></select></label><div id="tableGroup" style="display:none"><label>Table number<input id="tableNumber" placeholder="e.g. Table 4"/></label></div><div id="deliveryGroup" style="display:none"><label>Delivery address &amp; landmark<textarea id="deliveryAddress" rows="2" placeholder="Full address, building/flat name, landmark"></textarea></label></div><label>Special instructions<textarea id="orderNotes" rows="2" placeholder="Less spicy, no onion..." maxlength="500"></textarea></label><div class="checkout-summary" id="checkoutSummary"></div><button type="submit" class="primary-btn full-btn" id="confirmOrderBtn">Place Order</button></form></div></div>
+<div class="checkout-modal" id="checkoutModal"><div class="checkout-card"><button class="icon-btn checkout-close" id="closeCheckout">&times;</button><span class="kicker">CHECKOUT</span><h2>Confirm Order</h2><form id="checkoutForm">
+  <div class="order-type-block">
+    <span class="order-type-prompt">How would you like your order?</span>
+    <div class="order-type-tabs" id="orderTypeTabs">
+      <button type="button" class="order-type-tab active" data-type="Dine-in"><span class="tab-emoji">🍽️</span> Dine In</button>
+      <button type="button" class="order-type-tab" data-type="Takeaway"><span class="tab-emoji">🥡</span> Pickup</button>
+      <button type="button" class="order-type-tab" data-type="Delivery"><span class="tab-emoji">🛵</span> Delivery</button>
+    </div>
+    <input type="hidden" id="orderType" value="Dine-in"/>
+  </div>
+
+  <div class="form-fields">
+    <label>Your Name *<input id="customerName" required placeholder="Enter your name" autocomplete="name"/></label>
+    
+    <!-- Dine In Specific -->
+    <div id="dineInFields">
+      <label>Table Number *<input id="tableNumber" placeholder="e.g. Table 4"/></label>
+    </div>
+
+    <!-- Pickup & Delivery Specific -->
+    <div id="phoneFields" style="display:none">
+      <label>Phone Number *<input id="customerPhone" type="tel" placeholder="10-digit mobile number" pattern="[6-9][0-9]{9}" autocomplete="tel"/></label>
+    </div>
+
+    <!-- Delivery Specific -->
+    <div id="deliveryFields" style="display:none">
+      <label>Delivery Address *<textarea id="deliveryAddress" rows="2" placeholder="House / Flat / Building / Street address"></textarea></label>
+      <label>Landmark <small style="color:var(--muted);font-weight:normal">(Optional)</small><input id="deliveryLandmark" placeholder="Near mosque, school, pump, etc."/></label>
+    </div>
+
+    <!-- Optional Special Instructions for all -->
+    <label>Special Instructions <small style="color:var(--muted);font-weight:normal">(Optional)</small><textarea id="orderNotes" rows="2" placeholder="Less spicy, no onion, extra mayo..." maxlength="500"></textarea></label>
+  </div>
+
+  <div class="checkout-summary" id="checkoutSummary"></div>
+  <button type="submit" class="primary-btn full-btn" id="confirmOrderBtn">Place Order</button>
+</form></div></div>
 
 <!-- Live Order Status & Tracking Modal -->
 <div class="order-tracking-modal" id="orderTrackingModal">
@@ -186,7 +230,19 @@
   </div>
 </div>
 
-<div class="mobile-cart-bar" id="mobileCartBar" style="display:none"><div><strong id="mobileCartText">0 items</strong> <span id="mobileCartTotal">Rs 0</span></div><button class="primary-btn" id="mobileCartBtn" style="min-height:44px;padding:0 18px">View Cart</button></div>
+<div class="mobile-cart-bar" id="mobileCartBar" style="display:none">
+  <div class="mobile-cart-summary">
+    <span class="mobile-cart-bag">🛍️</span>
+    <div class="mobile-cart-info">
+      <strong id="mobileCartText">0 items</strong>
+      <span class="mobile-cart-dot">•</span>
+      <span id="mobileCartTotal">₹0</span>
+    </div>
+  </div>
+  <button class="primary-btn mobile-cart-cta" id="mobileCartBtn">
+    View Cart &rarr;
+  </button>
+</div>
 <div class="toast" id="toast"><span class="toast-icon" id="toastIcon">&#10003;</span><span id="toastText">Added to cart</span></div>
 <script src="app.js"></script>
 </body>

@@ -463,9 +463,17 @@ def create_order():
     requested = data.get("items") or []
 
     # Validation
-    if not name or not phone or order_type not in {"Takeaway", "Dine-in", "Delivery"} or not requested:
+    if not name or order_type not in {"Takeaway", "Dine-in", "Delivery"} or not requested:
         logger.warning(f"Invalid order submission from {get_remote_address()}")
-        return jsonify(error="Please complete your name, phone and order details."), 400
+        return jsonify(error="Please complete your order details."), 400
+
+    if order_type == "Dine-in":
+        if not table_number:
+            return jsonify(error="Please provide your table number for Dine-in."), 400
+        if not phone:
+            phone = f"Table {table_number}"
+    elif not phone:
+        return jsonify(error="Please provide a valid 10-digit phone number."), 400
 
     if order_type == "Delivery" and not delivery_address:
         return jsonify(error="Please provide a delivery address for Home Delivery."), 400
