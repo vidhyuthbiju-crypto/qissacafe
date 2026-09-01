@@ -2207,3 +2207,171 @@ textarea { resize: vertical; }
   .home-cards { grid-template-columns: 1fr; gap: 16px; }
   .home-cards-section { padding: 20px 0 60px; }
 }
+
+/* ============================================================
+   ESSENTIAL UI/UX ENHANCEMENTS
+   ============================================================ */
+
+/* 1. Shimmering Skeleton Loaders */
+.skeleton-card {
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: 24px;
+  padding: 22px 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(35, 42, 25, 0.05);
+}
+.skeleton-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.65) 50%, transparent 100%);
+  transform: translateX(-100%);
+  animation: skeletonShimmer 1.5s infinite;
+}
+@keyframes skeletonShimmer {
+  100% { transform: translateX(100%); }
+}
+.skeleton-thumb {
+  width: 100%;
+  aspect-ratio: 16/10;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.06);
+  margin-bottom: 14px;
+}
+.skeleton-cat {
+  width: 35%;
+  height: 12px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.05);
+  margin-bottom: 8px;
+}
+.skeleton-title {
+  width: 75%;
+  height: 20px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.08);
+  margin-bottom: 8px;
+}
+.skeleton-desc {
+  width: 90%;
+  height: 14px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.04);
+  margin-bottom: 16px;
+}
+.skeleton-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.skeleton-price {
+  width: 55px;
+  height: 24px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.07);
+}
+.skeleton-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* 2. Mobile Checkout Modal -> Native Slide-Up Bottom Sheet */
+.sheet-handle { display: none; }
+@media (max-width: 768px) {
+  .checkout-modal {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .checkout-card {
+    width: 100% !important;
+    max-height: 90vh !important;
+    border-radius: 28px 28px 0 0 !important;
+    padding: 20px 20px 34px !important;
+    transform: translateY(100%) !important;
+    transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 -12px 45px rgba(0, 0, 0, 0.28) !important;
+  }
+  .checkout-modal.show .checkout-card {
+    transform: translateY(0) !important;
+  }
+  .sheet-handle {
+    width: 44px;
+    height: 5px;
+    border-radius: 99px;
+    background: rgba(0, 0, 0, 0.20);
+    margin: 0 auto 14px;
+    display: block;
+  }
+}
+
+/* 3. Inline Form Errors */
+.has-error input, .has-error textarea, .has-error select {
+  border-color: #d33c30 !important;
+  background: rgba(255, 238, 238, 0.85) !important;
+  box-shadow: 0 0 0 3px rgba(211, 60, 48, 0.16) !important;
+}
+.field-error-msg {
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 750;
+  color: #c93024;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  animation: errorFadeIn 0.2s ease;
+}
+@keyframes errorFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 4. Button Spinner */
+.btn-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: btnSpin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+@keyframes btnSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* 5. Search Results Empty State */
+.empty-search-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 55px 22px;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 26px;
+  border: 1.5px dashed rgba(58, 99, 57, 0.28);
+  box-shadow: 0 10px 30px rgba(35, 42, 25, 0.05);
+}
+.empty-search-state .empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 12px;
+}
+.empty-search-state h3 {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+.empty-search-state p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  margin: 0 0 20px;
+}
+

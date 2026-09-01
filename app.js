@@ -108,8 +108,24 @@ async function api(url, options = {}) {
   }
 }
 
+function renderSkeletonGrid() {
+  return Array(8).fill(0).map(() => `
+    <div class="skeleton-card">
+      <div class="skeleton-shimmer"></div>
+      <div class="skeleton-thumb"></div>
+      <div class="skeleton-cat"></div>
+      <div class="skeleton-title"></div>
+      <div class="skeleton-desc"></div>
+      <div class="skeleton-bottom">
+        <div class="skeleton-price"></div>
+        <div class="skeleton-btn"></div>
+      </div>
+    </div>
+  `).join("");
+}
+
 async function loadStore() {
-  menuGrid.innerHTML = `<div class="cart-empty" style="grid-column:1/-1"><div><span class="no-results-icon">⌛</span><h3>Loading Qissa menu...</h3></div></div>`;
+  menuGrid.innerHTML = renderSkeletonGrid();
   try {
     const [menuData, storeData] = await Promise.all([api("/api/menu"), api("/api/status")]);
     menu = menuData.items;
@@ -218,10 +234,33 @@ function syncCardUI(id) {
   });
 }
 
+window.clearSearch = function() {
+  state.query = "";
+  const input = $("#menuSearch") || $("#searchInput");
+  if (input) input.value = "";
+  renderMenu();
+};
+
 function renderMenu() {
   const items = filteredMenu();
   if (!items.length) {
-    menuGrid.innerHTML = `<div class="cart-empty" style="grid-column:1/-1"><div><span class="no-results-icon">🔎</span><h3>No menu items found</h3><p>Try a different category or search term.</p></div></div>`;
+    const q = state.query.trim();
+    if (q) {
+      menuGrid.innerHTML = `
+        <div class="empty-search-state">
+          <span class="empty-icon">🔍</span>
+          <h3>No items found for "${escapeHtml(q)}"</h3>
+          <p>Try searching for Shawarma, Burger, Shake, Mojito or browse by category.</p>
+          <button type="button" class="secondary-btn" onclick="clearSearch()">Clear Search</button>
+        </div>`;
+    } else {
+      menuGrid.innerHTML = `
+        <div class="empty-search-state">
+          <span class="empty-icon">🍽️</span>
+          <h3>No items in this category</h3>
+          <p>Please select another category from the menu bar above.</p>
+        </div>`;
+    }
     return;
   }
   menuGrid.innerHTML = items.map((item, i) => {
@@ -680,8 +719,39 @@ function startTrackingPoll(orderRef) {
 $("#closeOrderTracking")?.addEventListener("click", closeOverlays);
 $("#trackingNewOrderBtn")?.addEventListener("click", closeOverlays);
 
+function showFieldError(fieldId, errorMsg) {
+  const wrap = $(`#wrap-${fieldId}`);
+  const errEl = $(`#err-${fieldId}`);
+  if (wrap) wrap.classList.add("has-error");
+  if (errEl) {
+    errEl.textContent = errorMsg;
+    errEl.style.display = "flex";
+  }
+}
+
+function clearFieldError(fieldId) {
+  const wrap = $(`#wrap-${fieldId}`);
+  const errEl = $(`#err-${fieldId}`);
+  if (wrap) wrap.classList.remove("has-error");
+  if (errEl) {
+    errEl.textContent = "";
+    errEl.style.display = "none";
+  }
+}
+
+function clearAllErrors() {
+  ["customerName", "tableNumber", "customerPhone", "deliveryAddress"].forEach(clearFieldError);
+}
+
+// Live real-time error clearing when customer starts typing
+["customerName", "tableNumber", "customerPhone", "deliveryAddress"].forEach(id => {
+  $(`#${id}`)?.addEventListener("input", () => clearFieldError(id));
+});
+
 $("#checkoutForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+  clearAllErrors();
+  
   const submitBtn = $("#confirmOrderBtn");
   const name = $("#customerName").value.trim();
   const orderType = $("#orderType").value || "Dine-in";
@@ -691,39 +761,47 @@ $("#checkoutForm").addEventListener("submit", async (e) => {
   const landmark = $("#deliveryLandmark") ? $("#deliveryLandmark").value.trim() : "";
   const notes = $("#orderNotes") ? $("#orderNotes").value.trim() : "";
 
-  if (!name || !state.cart.length) return;
+  if (!name || name.length < 2) {
+    showFieldError("customerName", "Please enter your name (min 2 letters)");
+    $("#customerName")?.focus();
+    return;
+  }
+
+  if (!state.cart.length) {
+    showToast("Your cart is empty!", "🛒");
+    return;
+  }
 
   if (orderType === "Dine-in") {
     if (!tableNumber) {
-      showToast("Please enter your Table Number", "!");
+      showFieldError("tableNumber", "Please enter your table number");
       $("#tableNumber")?.focus();
       return;
     }
   } else {
     if (!phone || !validatePhone(phone)) {
-      showToast("Please enter a valid 10-digit mobile number", "!");
+      showFieldError("customerPhone", "Please enter a valid 10-digit mobile number");
       $("#customerPhone")?.focus();
       return;
     }
   }
 
   if (orderType === "Delivery" && !deliveryAddress) {
-    showToast("Please enter your delivery address", "!");
+    showFieldError("deliveryAddress", "Please enter your delivery address");
     $("#deliveryAddress")?.focus();
     return;
   }
 
   if (!state.cafeOpen) {
-    showToast("Qissa is currently closed for orders", "!");
+    showToast("Qissa is currently closed for orders", "⚠️");
     return;
   }
 
   const fullDeliveryAddress = landmark ? `${deliveryAddress} (Landmark: ${landmark})` : deliveryAddress;
   const effectivePhone = (orderType === "Dine-in" && !phone) ? `Table ${tableNumber}` : phone;
 
-  const originalText = submitBtn.textContent;
   submitBtn.disabled = true;
-  submitBtn.textContent = "Placing order...";
+  submitBtn.innerHTML = '<span class="btn-spinner"></span> Placing order...';
 
   try {
     const result = await api("/api/orders", {
@@ -753,16 +831,18 @@ $("#checkoutForm").addEventListener("submit", async (e) => {
     updateMobileBar();
 
     $("#checkoutForm").reset();
+    clearAllErrors();
     setOrderType("Dine-in");
-    submitBtn.textContent = originalText;
+    submitBtn.innerHTML = "Place Order";
     submitBtn.disabled = false;
 
-    showToast("🎉 Order placed successfully!");
+    showToast("🎉 Order #" + (result.order_code || "") + " Placed Successfully!", "🎉", 2800);
+    closeOverlays();
     openOrderTracking(result);
 
   } catch (err) {
-    showToast(err.message || "Failed to place order. Please try again.", "!");
-    submitBtn.textContent = originalText;
+    showToast(err.message || "Failed to place order. Please try again.", "⚠️");
+    submitBtn.innerHTML = "Place Order";
     submitBtn.disabled = false;
   }
 });
