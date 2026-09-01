@@ -547,7 +547,7 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
 }
 
 .story-section { padding-top: 70px; }
-/* ===== Story Page - Apple Liquid Glass, Narrative Workflow & Floating Food Animations ===== */
+/* ===== Story Page - Super Realigned Bento Architecture & Liquid Glass ===== */
 .story-hero {
   background: linear-gradient(135deg, #FDF6E4 0%, #F3E6C6 50%, #E9D2A0 100%);
   padding: 85px 0 24px;
@@ -599,28 +599,29 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   background: radial-gradient(circle, rgba(212, 169, 60, 0.30), rgba(239, 203, 122, 0.06) 65%, transparent);
 }
 
-/* Narrative Timeline Workflow Bar */
+/* Narrative Timeline Workflow Bar - Perfectly Centered & Aligned */
 .story-timeline-bar {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 24px;
-  padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.52);
-  border: 1px solid rgba(255, 255, 255, 0.8);
+  gap: 12px;
+  margin: 0 auto 28px;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.85);
   border-radius: 999px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 8px 24px rgba(28, 38, 20, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 8px 24px rgba(28, 38, 20, 0.05), inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
   position: relative;
   z-index: 1;
-  overflow-x: auto;
+  max-width: 900px;
 }
 .timeline-step {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  gap: 8px;
   font-family: var(--font-accent);
   font-size: 0.76rem;
   font-weight: 800;
@@ -637,30 +638,29 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   place-items: center;
   font-size: 0.65rem;
   font-weight: 900;
+  flex-shrink: 0;
 }
-.timeline-arrow {
-  color: var(--gold-2);
-  font-size: 0.78rem;
-  font-weight: 800;
-  opacity: 0.7;
+.timeline-step .step-label {
+  letter-spacing: 0.04em;
 }
 
-/* Symmetrical 2x2 Story Grid */
+/* Symmetrical 2x2 Story Grid with Equal Heights */
 .story-grid-journey {
   position: relative;
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
+  gap: 22px;
+  align-items: stretch;
 }
 
-/* Liquid Glass Journey Card */
+/* Super-Realigned Liquid Glass Journey Card */
 .story-journey-card {
   position: relative;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.80) 0%, rgba(254, 246, 230, 0.44) 50%, rgba(255, 255, 255, 0.70) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(254, 246, 230, 0.46) 50%, rgba(255, 255, 255, 0.72) 100%);
   border: 1px solid rgba(255, 255, 255, 0.85);
   border-radius: 24px;
-  padding: 24px 22px 20px;
+  padding: 24px 24px 20px;
   backdrop-filter: blur(28px) saturate(1.8);
   -webkit-backdrop-filter: blur(28px) saturate(1.8);
   box-shadow: 
@@ -671,14 +671,15 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 14px;
+  height: 100%;
+  box-sizing: border-box;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 .story-journey-card:hover {
   transform: translateY(-5px);
   box-shadow: 
-    0 24px 50px rgba(28, 38, 20, 0.13),
+    0 24px 52px rgba(28, 38, 20, 0.13),
     0 4px 12px rgba(0, 0, 0, 0.04),
     inset 0 1.5px 2px rgba(255, 255, 255, 1);
 }
@@ -688,17 +689,19 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   top: 0;
   left: 0;
   right: 0;
-  height: 48%;
+  height: 45%;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0) 100%);
   pointer-events: none;
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
 }
 
+/* Card Header Line */
 .journey-card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 14px;
   position: relative;
   z-index: 1;
 }
@@ -722,37 +725,66 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   line-height: 1;
 }
 
+/* Main Content Area (Unified Geometry) */
 .journey-body {
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
-.journey-body h3 {
+.journey-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.journey-title-row h3 {
   font-family: var(--font-items);
   font-size: 1.35rem;
   font-weight: 850;
   color: var(--ink);
-  margin: 0 0 4px;
+  margin: 0;
   letter-spacing: -0.02em;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
-.age-badge, .location-badge {
+.journey-badge-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.age-badge, .location-badge, .tag-badge {
   font-family: var(--font-accent);
   font-size: 0.62rem;
   font-weight: 800;
   padding: 3px 8px;
   border-radius: 999px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.age-badge {
   background: rgba(212, 169, 60, 0.18);
   color: #795712;
   border: 1px solid rgba(212, 169, 60, 0.35);
-  letter-spacing: 0.04em;
 }
+.location-badge {
+  background: rgba(58, 99, 57, 0.10);
+  color: var(--green);
+  border: 1px solid rgba(58, 99, 57, 0.20);
+}
+.tag-badge {
+  background: rgba(44, 78, 43, 0.08);
+  color: var(--ink);
+  border: 1px solid rgba(44, 78, 43, 0.15);
+}
+
 .journey-subtitle {
   font-family: var(--font-accent);
-  font-size: 0.80rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 750;
   color: var(--green);
   margin: 0 0 8px;
   letter-spacing: 0.01em;
@@ -762,14 +794,14 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   font-size: 0.86rem;
   color: #4C5240;
   line-height: 1.65;
-  margin: 0;
+  margin: 0 0 16px;
 }
 .journey-text strong {
   color: var(--ink);
   font-weight: 700;
 }
 
-/* Card 03: Qissa Resto Cafe (Deep Emerald Liquid Glass) */
+/* Card 03: Qissa Resto Cafe (Deep Emerald Liquid Glass with Matching Geometry) */
 .story-card-qissa {
   background: linear-gradient(145deg, rgba(22, 42, 21, 0.95) 0%, rgba(35, 66, 34, 0.92) 50%, rgba(46, 84, 44, 0.88) 100%);
   border: 1px solid rgba(255, 255, 255, 0.25);
@@ -787,29 +819,48 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
 .story-card-qissa .journey-num {
   color: rgba(255, 255, 255, 0.22);
 }
-.story-logo-mini {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+.story-card-qissa .journey-title-row h3 {
+  color: white;
 }
-.story-logo-img {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  object-fit: cover;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
+.story-card-qissa .journey-subtitle {
+  color: var(--gold-2);
+}
+.story-card-qissa .journey-text {
+  color: rgba(255, 255, 255, 0.84);
+}
+.story-card-qissa .age-badge {
+  background: rgba(212, 169, 60, 0.22);
+  color: var(--gold-2);
+  border-color: rgba(212, 169, 60, 0.4);
+}
+.story-card-qissa .location-badge {
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+.story-card-qissa .tag-badge {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
-/* Floating Food Animated Cluster */
+.story-logo-inline {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+}
+
+/* Floating Food Animated Cluster - Locked to Bottom Baseline */
 .floating-food-cluster {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(58, 99, 57, 0.14);
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 4px;
-  padding-top: 10px;
-  border-top: 1px dashed rgba(58, 99, 57, 0.14);
+  gap: 8px;
   position: relative;
   z-index: 1;
 }
@@ -880,11 +931,15 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
     border-radius: 20px;
   }
   .story-timeline-bar {
-    padding: 8px 12px;
+    grid-template-columns: repeat(2, 1fr);
+    border-radius: 16px;
+    gap: 8px;
+    padding: 10px 12px;
     margin-bottom: 16px;
   }
   .timeline-step {
     font-size: 0.70rem;
+    justify-content: flex-start;
   }
 }
 
