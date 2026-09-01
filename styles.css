@@ -712,7 +712,7 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   padding: 10px 16px;
 }
 
-/* Base Story Card - Crystal Clear & Highly Readable */
+/* Base Story Card - Crystal Clear & Pop-Up Interactive */
 .story-journey-card {
   position: relative;
   background: rgba(255, 255, 255, 0.88);
@@ -730,19 +730,22 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   justify-content: space-between;
   min-height: 320px;
   box-sizing: border-box;
-  transform: translateY(0);
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s ease;
+  transform: translateY(0) scale(1);
+  transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s ease;
   overflow: hidden;
+  cursor: pointer;
 }
 
+/* Universal Pop-Up Animation on Cursor Hover */
 .story-journey-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-12px) scale(1.025);
   box-shadow: 
-    0 24px 50px rgba(35, 42, 25, 0.12),
-    inset 0 1px 1px rgba(255, 255, 255, 1);
+    0 28px 65px rgba(35, 42, 25, 0.15),
+    0 4px 14px rgba(0, 0, 0, 0.04),
+    inset 0 1px 1.5px rgba(255, 255, 255, 1);
 }
 
-/* Card 1: Qissa Resto Cafe - Signature Emerald Glass */
+/* Card 1: Qissa Resto Cafe - Emerald & Gold Halo Pop-Up */
 .story-card-qissa {
   background: linear-gradient(145deg, #183319 0%, #0E2210 100%) !important;
   border: 1.5px solid rgba(212, 169, 60, 0.55) !important;
@@ -753,11 +756,12 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
     inset 0 1px 1px rgba(255, 255, 255, 0.35) !important;
 }
 .story-card-qissa:hover {
-  transform: translateY(-6px);
+  transform: translateY(-12px) scale(1.025) !important;
+  border-color: rgba(212, 169, 60, 0.90) !important;
   box-shadow: 
-    0 28px 65px rgba(12, 28, 11, 0.45),
-    0 0 45px rgba(212, 169, 60, 0.25),
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.5) !important;
+    0 34px 80px rgba(12, 28, 11, 0.55),
+    0 0 50px rgba(212, 169, 60, 0.40),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.6) !important;
 }
 .story-card-qissa .journey-chapter-tag {
   color: #FBE39D;
@@ -799,22 +803,43 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   border: 1.5px solid rgba(212, 169, 60, 0.65);
 }
 
-/* Card 2: Amal VP Founder */
+/* Card 2: Amal VP Founder - Gold Green Halo Pop-Up */
 .story-card-founder {
   background: linear-gradient(145deg, #FFFFFF 0%, #FAF4E8 100%);
   border-color: rgba(58, 99, 57, 0.22);
 }
+.story-card-founder:hover {
+  border-color: rgba(212, 169, 60, 0.65);
+  box-shadow: 
+    0 28px 65px rgba(35, 42, 25, 0.15),
+    0 0 35px rgba(212, 169, 60, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 1);
+}
 
-/* Card 3: Chaywala Hub */
+/* Card 3: Chaywala Hub - Amber Chai Halo Pop-Up */
 .story-card-chaywala {
   background: linear-gradient(145deg, #FFFFFF 0%, #FDF7EC 100%);
   border-color: rgba(212, 169, 60, 0.32);
 }
+.story-card-chaywala:hover {
+  border-color: rgba(199, 138, 30, 0.65);
+  box-shadow: 
+    0 28px 65px rgba(199, 138, 30, 0.18),
+    0 0 35px rgba(239, 178, 60, 0.28),
+    inset 0 1px 1px rgba(255, 255, 255, 1);
+}
 
-/* Card 4: The Authentic Craft */
+/* Card 4: The Authentic Craft - Botanical Fresh Halo Pop-Up */
 .story-card-craft {
   background: linear-gradient(145deg, #FFFFFF 0%, #F4F8F2 100%);
   border-color: rgba(58, 99, 57, 0.22);
+}
+.story-card-craft:hover {
+  border-color: rgba(58, 99, 57, 0.55);
+  box-shadow: 
+    0 28px 65px rgba(58, 99, 57, 0.18),
+    0 0 35px rgba(77, 140, 66, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 1);
 }
 
 .story-card-glass-shine {
@@ -854,6 +879,15 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   font-size: 1.7rem;
   color: rgba(58, 99, 57, 0.22);
   line-height: 1;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease;
+  transform-origin: center right;
+}
+.story-journey-card:hover .journey-num {
+  transform: scale(1.18) rotate(3deg);
+  color: var(--green);
+}
+.story-card-qissa:hover .journey-num {
+  color: #FBE39D;
 }
 
 /* Main Content Area */
@@ -955,6 +989,15 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   font-size: 0.74rem;
   font-weight: 800;
   color: var(--ink);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.story-journey-card:hover .floating-food-pill {
+  transform: translateY(-4px) scale(1.06);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+.story-card-qissa:hover .floating-food-pill {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(212, 169, 60, 0.65);
 }
 .floating-food-pill.dark-pill {
   background: rgba(255, 255, 255, 0.14);
