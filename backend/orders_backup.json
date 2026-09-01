@@ -1,7 +1,54 @@
 {
   "version": "1.0",
-  "backed_up_at": "2026-09-01T16:41:21.434343",
-  "orders": [],
+  "backed_up_at": "2026-09-01T16:50:11.416884",
+  "orders": [
+    {
+      "id": 279,
+      "order_code": "Q000279",
+      "customer_name": "Alice Dine-in",
+      "phone": "9876543210",
+      "order_type": "Dine-in",
+      "table_number": "Table 7",
+      "delivery_address": "",
+      "notes": "Extra mayo",
+      "total": 180,
+      "status": "new",
+      "created_at": "2026-09-01T16:50:11",
+      "updated_at": "2026-09-01T16:50:11",
+      "items": [
+        {
+          "menu_item_id": 1,
+          "item_name": "Shawarma Roll",
+          "unit_price": 90,
+          "qty": 2,
+          "line_total": 180
+        }
+      ]
+    },
+    {
+      "id": 280,
+      "order_code": "Q000280",
+      "customer_name": "Bob Delivery",
+      "phone": "9876543211",
+      "order_type": "Delivery",
+      "table_number": "",
+      "delivery_address": "Beach Road, Villa #42, Calicut",
+      "notes": "Call on arrival",
+      "total": 110,
+      "status": "new",
+      "created_at": "2026-09-01T16:50:11",
+      "updated_at": "2026-09-01T16:50:11",
+      "items": [
+        {
+          "menu_item_id": 2,
+          "item_name": "Shawarma Plate",
+          "unit_price": 110,
+          "qty": 1,
+          "line_total": 110
+        }
+      ]
+    }
+  ],
   "settings": {
     "menu_revision": "2026-08-31-v2",
     "cafe_open": "1",

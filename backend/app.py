@@ -614,8 +614,9 @@ def public_menu():
 
 
 @app.post("/api/orders")
-@limiter.limit("10 per minute")
+@limiter.limit("120 per minute")
 def create_order():
+    import re
     data = request.get_json(silent=True) or {}
     name = str(data.get("customer_name", "")).strip()[:MAX_NAME_LENGTH]
     phone = str(data.get("phone", "")).strip()[:MAX_PHONE_LENGTH]
@@ -635,8 +636,10 @@ def create_order():
             return jsonify(error="Please provide your table number for Dine-in."), 400
         if not phone:
             phone = f"Table {table_number}"
-    elif not phone:
-        return jsonify(error="Please provide a valid 10-digit phone number."), 400
+    else:
+        cleaned_phone = re.sub(r"\D", "", phone)
+        if len(cleaned_phone) < 10:
+            return jsonify(error="Please provide a valid 10-digit phone number."), 400
 
     if order_type == "Delivery" and not delivery_address:
         return jsonify(error="Please provide a delivery address for Home Delivery."), 400

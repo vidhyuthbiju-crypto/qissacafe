@@ -2,7 +2,8 @@ const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAl
 let menuItems = [], orders = [];
 let autoRefreshInterval = null;
 let eventSource = null;
-const AUTO_REFRESH_SECONDS = 15;
+let reconnectTimer = null;
+const AUTO_REFRESH_SECONDS = 3;
 let lastKnownMaxOrderId = 0;
 
 async function api(url, options = {}) {
@@ -32,9 +33,10 @@ async function showApp() {
 
 function initLiveStream() {
   if (eventSource) {
-    eventSource.close();
+    try { eventSource.close(); } catch (_) {}
     eventSource = null;
   }
+  clearTimeout(reconnectTimer);
   try {
     eventSource = new EventSource('/api/admin/events');
     eventSource.onmessage = (event) => {
@@ -46,11 +48,14 @@ function initLiveStream() {
       }
     };
     eventSource.onerror = () => {
-      // Browser automatically attempts reconnect for SSE.
-      // Auto-refresh interval remains as backup.
+      if (eventSource) {
+        try { eventSource.close(); } catch (_) {}
+        eventSource = null;
+      }
+      reconnectTimer = setTimeout(initLiveStream, 3000);
     };
   } catch (err) {
-    console.warn("SSE not available, relying on fast polling", err);
+    console.warn("SSE not available, relying on fast 3s polling", err);
   }
 }
 
