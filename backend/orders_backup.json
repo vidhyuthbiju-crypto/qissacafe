@@ -1,7 +1,16 @@
 {
   "version": "1.0",
-  "backed_up_at": "",
+  "backed_up_at": "2026-09-01T16:34:44.943584",
   "orders": [],
-  "settings": {},
-  "custom_menu_count": 0
+  "settings": {
+    "menu_revision": "2026-08-31-v2",
+    "cafe_open": "1",
+    "whatsapp": "919645700585",
+    "address": "Qissa Resto Cafe, Nilambur Road, Kerala",
+    "opening_hours": "12:00 PM – 11:30 PM",
+    "map_embed_url": "https://maps.google.com/maps?q=11.1116412,76.2789462&t=&z=16&ie=UTF8&iwloc=&output=embed",
+    "maps_directions_url": "https://maps.app.goo.gl/5v2gcWyZ5xAjXJHV6",
+    "admin_password_hash": "pbkdf2:sha256:1000000$K8hLl8xoqvXGrEBb$6e6156c1b6c663a94bce0bbf7e669962af9edb563cc3a11d22f578c7ead638ca"
+  },
+  "custom_menu_count": 73
 }
