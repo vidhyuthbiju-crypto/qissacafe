@@ -547,7 +547,7 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
 }
 
 .story-section { padding-top: 70px; }
-/* ===== Story Page - Super Realigned Bento Architecture & Liquid Glass ===== */
+/* ===== Story Page - Overlapping Polaroid Collage Architecture ===== */
 .story-hero {
   background: linear-gradient(135deg, #FDF6E4 0%, #F3E6C6 50%, #E9D2A0 100%);
   padding: 85px 0 24px;
@@ -573,30 +573,30 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
 .story-wrapper {
   position: relative;
   overflow: hidden;
-  padding: 24px 0 70px;
+  padding: 24px 0 80px;
 }
 
 .story-ambient-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
+  filter: blur(65px);
   pointer-events: none;
   z-index: 0;
   opacity: 0.55;
 }
 .story-orb-1 {
-  width: 380px;
-  height: 380px;
+  width: 400px;
+  height: 400px;
   left: -50px;
   top: 10%;
-  background: radial-gradient(circle, rgba(58, 99, 57, 0.32), rgba(111, 166, 92, 0.08) 65%, transparent);
+  background: radial-gradient(circle, rgba(58, 99, 57, 0.35), rgba(111, 166, 92, 0.08) 65%, transparent);
 }
 .story-orb-2 {
-  width: 340px;
-  height: 340px;
+  width: 360px;
+  height: 360px;
   right: -30px;
   bottom: 12%;
-  background: radial-gradient(circle, rgba(212, 169, 60, 0.30), rgba(239, 203, 122, 0.06) 65%, transparent);
+  background: radial-gradient(circle, rgba(212, 169, 60, 0.32), rgba(239, 203, 122, 0.06) 65%, transparent);
 }
 
 /* Narrative Timeline Workflow Bar - Perfectly Centered & Aligned */
@@ -605,16 +605,16 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   grid-template-columns: repeat(4, 1fr);
   align-items: center;
   gap: 12px;
-  margin: 0 auto 28px;
+  margin: 0 auto 32px;
   padding: 12px 18px;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.58);
   border: 1px solid rgba(255, 255, 255, 0.85);
   border-radius: 999px;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   box-shadow: 0 8px 24px rgba(28, 38, 20, 0.05), inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: 900px;
 }
 .timeline-step {
@@ -644,44 +644,84 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   letter-spacing: 0.04em;
 }
 
-/* Symmetrical 2x2 Story Grid with Equal Heights */
+/* 2x2 Overlapping Collage Grid (Exact to Reference Image) */
 .story-grid-journey {
   position: relative;
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 22px;
+  gap: 18px;
   align-items: stretch;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 10px 8px;
 }
 
-/* Super-Realigned Liquid Glass Journey Card */
+/* Base Collage Card */
 .story-journey-card {
   position: relative;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(254, 246, 230, 0.46) 50%, rgba(255, 255, 255, 0.72) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  border-radius: 24px;
-  padding: 24px 24px 20px;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.88) 0%, rgba(254, 246, 230, 0.58) 50%, rgba(255, 255, 255, 0.82) 100%);
+  border: 3px solid rgba(255, 255, 255, 0.95);
+  border-radius: 26px;
+  padding: 26px 24px 22px;
   backdrop-filter: blur(28px) saturate(1.8);
   -webkit-backdrop-filter: blur(28px) saturate(1.8);
   box-shadow: 
-    0 16px 40px rgba(28, 38, 20, 0.08),
-    0 2px 6px rgba(0, 0, 0, 0.02),
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.95),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.02);
+    0 18px 45px rgba(28, 38, 20, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.04),
+    inset 0 1.5px 2px rgba(255, 255, 255, 1);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
+  min-height: 310px;
   box-sizing: border-box;
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), z-index 0.1s ease;
   overflow: hidden;
+  transform-origin: center center;
 }
+
+/* 4 Overlapping Tilted Layers (Exact Reference Image Geometry) */
+
+/* Card 1: Top-Left - The Green Hero (First & Highest Z-Index) */
+.story-layer-1 {
+  transform: rotate(-3.2deg) translateY(0px) translateX(4px);
+  z-index: 5;
+  margin-right: -12px;
+  margin-bottom: -14px;
+}
+
+/* Card 2: Top-Right - Amal VP */
+.story-layer-2 {
+  transform: rotate(3.4deg) translateY(6px) translateX(-4px);
+  z-index: 4;
+  margin-left: -12px;
+  margin-bottom: -10px;
+}
+
+/* Card 3: Bottom-Left - Chaywala */
+.story-layer-3 {
+  transform: rotate(2.6deg) translateY(12px) translateX(4px);
+  z-index: 4;
+  margin-right: -12px;
+  margin-top: -10px;
+}
+
+/* Card 4: Bottom-Right - Authentic Craft */
+.story-layer-4 {
+  transform: rotate(-3.0deg) translateY(18px) translateX(-4px);
+  z-index: 3;
+  margin-left: -12px;
+  margin-top: -6px;
+}
+
+/* Interactive Hover Lift & Straighten */
 .story-journey-card:hover {
-  transform: translateY(-5px);
+  transform: rotate(0deg) translateY(-12px) scale(1.035) !important;
+  z-index: 20 !important;
   box-shadow: 
-    0 24px 52px rgba(28, 38, 20, 0.13),
-    0 4px 12px rgba(0, 0, 0, 0.04),
-    inset 0 1.5px 2px rgba(255, 255, 255, 1);
+    0 32px 75px rgba(20, 36, 18, 0.28),
+    0 0 35px rgba(212, 169, 60, 0.20),
+    inset 0 2px 3px rgba(255, 255, 255, 1) !important;
 }
 
 .story-card-glass-shine {
@@ -690,10 +730,10 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   left: 0;
   right: 0;
   height: 45%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 100%);
   pointer-events: none;
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
+  border-top-left-radius: 26px;
+  border-top-right-radius: 26px;
 }
 
 /* Card Header Line */
@@ -725,7 +765,7 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   line-height: 1;
 }
 
-/* Main Content Area (Unified Geometry) */
+/* Main Content Area */
 .journey-body {
   position: relative;
   z-index: 1;
@@ -801,52 +841,45 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   font-weight: 700;
 }
 
-/* Card 03: Qissa Resto Cafe (The Grand Hero Highlight Card - Bigger & Glowing) */
+/* Card 1 Specific: Deep Glowing Emerald Liquid Glass Hero */
 .story-card-qissa {
-  grid-column: 1 / -1; /* Spans full width of the grid on desktop! */
-  background: linear-gradient(145deg, rgba(15, 33, 14, 0.97) 0%, rgba(26, 54, 25, 0.94) 50%, rgba(38, 74, 37, 0.90) 100%);
-  border: 1.5px solid rgba(212, 169, 60, 0.45); /* High-end gold rim accent */
-  color: white;
-  padding: 30px 28px 24px;
+  background: linear-gradient(145deg, rgba(14, 32, 13, 0.98) 0%, rgba(24, 52, 23, 0.95) 50%, rgba(36, 72, 35, 0.92) 100%) !important;
+  border: 3px solid rgba(212, 169, 60, 0.70) !important;
+  color: white !important;
   box-shadow: 
-    0 24px 65px rgba(14, 32, 13, 0.32),
-    0 0 35px rgba(212, 169, 60, 0.16),
-    inset 0 1.5px 2.5px rgba(255, 255, 255, 0.50);
+    0 26px 70px rgba(12, 28, 11, 0.40),
+    0 0 45px rgba(212, 169, 60, 0.22),
+    inset 0 1.5px 2.5px rgba(255, 255, 255, 0.60) !important;
 }
 .story-card-qissa:hover {
-  transform: translateY(-5px);
   box-shadow: 
-    0 30px 75px rgba(14, 32, 13, 0.40),
-    0 0 45px rgba(212, 169, 60, 0.25),
-    inset 0 1.5px 3px rgba(255, 255, 255, 0.70);
+    0 36px 85px rgba(12, 28, 11, 0.50),
+    0 0 55px rgba(212, 169, 60, 0.35),
+    inset 0 2px 3.5px rgba(255, 255, 255, 0.80) !important;
 }
 .story-card-qissa .journey-chapter-tag {
   color: var(--gold-2);
-  background: rgba(212, 169, 60, 0.20);
-  border-color: rgba(212, 169, 60, 0.45);
+  background: rgba(212, 169, 60, 0.22);
+  border-color: rgba(212, 169, 60, 0.50);
   font-weight: 900;
 }
 .story-card-qissa .journey-num {
-  color: rgba(212, 169, 60, 0.40);
-  font-size: 1.9rem;
+  color: rgba(212, 169, 60, 0.45);
+  font-size: 1.8rem;
 }
 .story-card-qissa .journey-title-row h3 {
-  font-size: 1.55rem;
   color: white;
 }
 .story-card-qissa .journey-subtitle {
   color: var(--gold-2);
-  font-size: 0.88rem;
 }
 .story-card-qissa .journey-text {
   color: rgba(255, 255, 255, 0.88);
-  font-size: 0.90rem;
-  max-width: 820px;
 }
 .story-card-qissa .age-badge {
-  background: rgba(212, 169, 60, 0.22);
+  background: rgba(212, 169, 60, 0.25);
   color: var(--gold-2);
-  border-color: rgba(212, 169, 60, 0.45);
+  border-color: rgba(212, 169, 60, 0.50);
 }
 .story-card-qissa .location-badge {
   background: rgba(255, 255, 255, 0.16);
@@ -860,18 +893,12 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
 }
 
 .story-card-qissa .story-logo-inline {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
   object-fit: cover;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
-  border: 1.5px solid rgba(212, 169, 60, 0.6);
-}
-
-/* Card 04: The Craft (Bottom Guarantee Card) */
-.story-card-craft {
-  grid-column: 1 / -1;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(254, 246, 230, 0.52) 50%, rgba(255, 255, 255, 0.78) 100%);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  border: 1.5px solid rgba(212, 169, 60, 0.65);
 }
 
 /* Floating Food Animated Cluster - Locked to Bottom Baseline */
@@ -886,7 +913,7 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   z-index: 1;
 }
 .story-card-qissa .floating-food-cluster {
-  border-top-color: rgba(255, 255, 255, 0.15);
+  border-top-color: rgba(255, 255, 255, 0.18);
 }
 .floating-food-pill {
   display: inline-flex;
@@ -936,10 +963,31 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   50% { transform: translateY(-6px) rotate(-2deg); }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .story-grid-journey {
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 20px;
+    padding: 10px 4px;
+  }
+  .story-layer-1 {
+    transform: rotate(-1.8deg) translateY(0);
+    margin: 0 0 -10px 0;
+    z-index: 5;
+  }
+  .story-layer-2 {
+    transform: rotate(2.0deg) translateY(0);
+    margin: 0 0 -10px 0;
+    z-index: 4;
+  }
+  .story-layer-3 {
+    transform: rotate(-1.5deg) translateY(0);
+    margin: 0 0 -10px 0;
+    z-index: 3;
+  }
+  .story-layer-4 {
+    transform: rotate(1.8deg) translateY(0);
+    margin: 0;
+    z-index: 2;
   }
   .story-hero {
     padding: 55px 0 16px !important;
@@ -948,15 +996,15 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
     padding: 14px 0 50px;
   }
   .story-journey-card {
-    padding: 20px 18px 16px;
-    border-radius: 20px;
+    padding: 22px 18px 18px;
+    border-radius: 22px;
   }
   .story-timeline-bar {
     grid-template-columns: repeat(2, 1fr);
-    border-radius: 16px;
+    border-radius: 18px;
     gap: 8px;
     padding: 10px 12px;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
   }
   .timeline-step {
     font-size: 0.70rem;
