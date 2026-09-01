@@ -292,9 +292,12 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   margin-bottom: 20px;
 }
 .category-scroll-wrap {
+  position: relative;
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  display: flex;
+  align-items: center;
 }
 .category-scroll {
   width: 100%;
@@ -306,7 +309,8 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
-  padding: 4px 2px 8px;
+  scroll-behavior: smooth;
+  padding: 4px 44px 8px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -314,6 +318,50 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   display: none;
   width: 0;
   height: 0;
+}
+.cat-nav-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px solid rgba(58, 99, 57, 0.24);
+  color: var(--green);
+  font-size: 1.45rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.22s ease;
+  user-select: none;
+  padding: 0;
+  line-height: 1;
+}
+.cat-nav-arrow:hover {
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 18px rgba(58, 99, 57, 0.32);
+}
+.cat-nav-arrow:active {
+  transform: translateY(-50%) scale(0.95);
+}
+.cat-nav-arrow.cat-nav-left {
+  left: 0;
+}
+.cat-nav-arrow.cat-nav-right {
+  right: 0;
+}
+.cat-nav-arrow.dimmed {
+  opacity: 0.3;
+  pointer-events: none;
 }
 .category-btn {
   flex-shrink: 0;
@@ -334,11 +382,16 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   transition: all 0.22s ease;
   touch-action: manipulation;
 }
+.category-btn:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(58, 99, 57, 0.3);
+  transform: translateY(-1px);
+}
 .category-btn.active {
   background: var(--green);
   color: white;
   border-color: var(--green);
-  box-shadow: 0 4px 12px rgba(58, 99, 57, 0.22);
+  box-shadow: 0 4px 14px rgba(58, 99, 57, 0.25);
 }
 
 .menu-search-wrap {

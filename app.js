@@ -175,6 +175,59 @@ function formatWhatsapp(num) {
   return clean;
 }
 
+function updateCategoryScrollArrows() {
+  const container = document.getElementById("categoryFilters");
+  const leftBtn = document.getElementById("catScrollLeft");
+  const rightBtn = document.getElementById("catScrollRight");
+  if (!container || !leftBtn || !rightBtn) return;
+
+  const maxScroll = container.scrollWidth - container.clientWidth;
+  if (maxScroll <= 5) {
+    leftBtn.classList.add("dimmed");
+    rightBtn.classList.add("dimmed");
+    return;
+  }
+  leftBtn.classList.toggle("dimmed", container.scrollLeft <= 5);
+  rightBtn.classList.toggle("dimmed", container.scrollLeft >= maxScroll - 5);
+}
+
+function initCategoryScrollControls() {
+  const container = document.getElementById("categoryFilters");
+  const leftBtn = document.getElementById("catScrollLeft");
+  const rightBtn = document.getElementById("catScrollRight");
+
+  if (leftBtn) {
+    leftBtn.addEventListener("click", () => {
+      if (container) {
+        container.scrollBy({ left: -280, behavior: "smooth" });
+        setTimeout(updateCategoryScrollArrows, 350);
+      }
+    });
+  }
+
+  if (rightBtn) {
+    rightBtn.addEventListener("click", () => {
+      if (container) {
+        container.scrollBy({ left: 280, behavior: "smooth" });
+        setTimeout(updateCategoryScrollArrows, 350);
+      }
+    });
+  }
+
+  if (container) {
+    container.addEventListener("scroll", updateCategoryScrollArrows, { passive: true });
+    
+    // Enable horizontal scrolling with vertical mouse wheel on PC / Desktop
+    container.addEventListener("wheel", (e) => {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        container.scrollBy({ left: e.deltaY * 1.5, behavior: "auto" });
+        updateCategoryScrollArrows();
+      }
+    }, { passive: false });
+  }
+}
+
 function renderCategories() {
   categoryFilters.innerHTML = categories().map(cat => `
     <button class="category-btn ${state.category === cat ? "active" : ""}" data-category="${escapeHtml(cat)}" aria-pressed="${state.category === cat}">
@@ -187,6 +240,7 @@ function renderCategories() {
     renderMenu();
     btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
   }));
+  setTimeout(updateCategoryScrollArrows, 100);
 }
 
 function filteredMenu() {
@@ -977,6 +1031,7 @@ document.addEventListener("click",e=>{
 });
 $("#searchBtn")?.addEventListener("click",()=>{showPage("menu");setTimeout(()=>$("#menuSearch")?.focus(),400)});
 loadStore();
+initCategoryScrollControls();
 
 // Live background store & menu synchronization (8-second interval)
 setInterval(async () => {
