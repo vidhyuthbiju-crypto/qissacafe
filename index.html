@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=8.0"/>
+<link rel="stylesheet" href="styles.css?v=8.5"/>
 </head>
 <body>
 <div class="grain"></div><div class="cursor-glow" id="cursorGlow"></div>
@@ -93,52 +93,108 @@
 </div>
 </section>
 <section class="page" id="page-story">
-<div class="story-hero"><div class="container"><span class="kicker">OUR STORY</span><h2>Not just food.<br><em>A Qissa.</em></h2><p>Built around passion, authentic flavours, and spaces where people come together.</p></div></div>
+<div class="story-hero">
+  <div class="container">
+    <span class="kicker">THE QISSA CHRONICLE</span>
+    <h2>The Journey Behind<br><em>Every Bite.</em></h2>
+    <p>From a small-town chai hub to a full resto cafe — two landmark spots powered by one 19-year-old founder's passion for authentic taste.</p>
+  </div>
+</div>
 <div class="story-wrapper container">
   <div class="story-ambient-orb story-orb-1"></div>
   <div class="story-ambient-orb story-orb-2"></div>
-  <div class="story-grid">
-    <div class="story-card story-main">
+  
+  <div class="story-timeline-bar">
+    <div class="timeline-step"><span class="step-num">01</span><span>The Vision</span></div>
+    <div class="timeline-arrow">&#10140;</div>
+    <div class="timeline-step"><span class="step-num">02</span><span>Chaywala</span></div>
+    <div class="timeline-arrow">&#10140;</div>
+    <div class="timeline-step"><span class="step-num">03</span><span>Qissa Cafe</span></div>
+    <div class="timeline-arrow">&#10140;</div>
+    <div class="timeline-step"><span class="step-num">04</span><span>Authentic Craft</span></div>
+  </div>
+
+  <div class="story-grid-journey">
+    <!-- Chapter 01: Amal VP -->
+    <div class="story-journey-card story-card-founder reveal">
       <div class="story-card-glass-shine"></div>
-      <div class="story-main-content">
-        <div class="story-logo-wrap">
+      <div class="journey-card-top">
+        <span class="journey-chapter-tag">CHAPTER 01 &bull; THE VISIONARY</span>
+        <span class="journey-num">01</span>
+      </div>
+      <div class="journey-body">
+        <h3>Amal VP <span class="age-badge">19 Yrs</span></h3>
+        <p class="journey-subtitle">A young founder bringing fresh ambition to dining.</p>
+        <p class="journey-text">At just 19 years old, <strong>Amal VP</strong> set out with a bold vision: to build vibrant spaces where people connect over authentic food, uplifting hospitality, and heartfelt conversations.</p>
+      </div>
+      <div class="floating-food-cluster">
+        <span class="floating-food-pill anim-drift-1"><span class="food-emoji">&#127793;</span> Fresh Vision</span>
+        <span class="floating-food-pill anim-drift-2"><span class="food-emoji">&#10024;</span> Pure Ambition</span>
+        <span class="floating-food-pill anim-drift-3"><span class="food-emoji">&#128170;</span> 19 Yrs Founder</span>
+      </div>
+    </div>
+
+    <!-- Chapter 02: Chaywala (Thuvvur Center) -->
+    <div class="story-journey-card story-card-chaywala reveal">
+      <div class="story-card-glass-shine"></div>
+      <div class="journey-card-top">
+        <span class="journey-chapter-tag">CHAPTER 02 &bull; THE CHAI HUB</span>
+        <span class="journey-num">02</span>
+      </div>
+      <div class="journey-body">
+        <h3>Chaywala <span class="location-badge">Thuvvur Center</span></h3>
+        <p class="journey-subtitle">The bustling town favorite for steaming chai &amp; snacks.</p>
+        <p class="journey-text">Amal's flagship venture, <strong>Chaywala</strong> in Thuvvur Center, became a beloved community cornerstone &mdash; renowned for hot steaming kadak chai, fresh snacks, and warm daily gatherings.</p>
+      </div>
+      <div class="floating-food-cluster">
+        <span class="floating-food-pill anim-drift-1"><span class="food-emoji">&#129750;</span> Kadak Chai</span>
+        <span class="floating-food-pill anim-drift-2"><span class="food-emoji">&#129383;</span> Hot Snacks</span>
+        <span class="floating-food-pill anim-drift-3"><span class="food-emoji">&#9749;</span> Special Tea</span>
+      </div>
+    </div>
+
+    <!-- Chapter 03: Qissa Resto Cafe (Nilambur Road) -->
+    <div class="story-journey-card story-card-qissa reveal">
+      <div class="story-card-glass-shine"></div>
+      <div class="journey-card-top">
+        <span class="journey-chapter-tag">CHAPTER 03 &bull; THE RESTO CAFE</span>
+        <span class="journey-num">03</span>
+      </div>
+      <div class="journey-body">
+        <div class="story-logo-mini">
           <img src="assets/qissa-logo.jpeg" alt="Qissa Resto Cafe" class="story-logo-img"/>
-          <div class="story-logo-brand">
-            <strong>QISSA</strong>
-            <span>RESTO CAFE</span>
+          <div>
+            <strong style="color:white;font-size:1.12rem;display:block;line-height:1.1">QISSA</strong>
+            <span style="color:var(--gold-2);font-size:0.62rem;letter-spacing:0.16em;font-weight:700">RESTO CAFE &bull; NILAMBUR RD</span>
           </div>
         </div>
-        <span class="story-pill">CRAFT &amp; PASSION</span>
-        <h3>Every dish tells a story</h3>
-        <p>From sizzling hot shawarmas and crispy broasts to chilled mojitos and faloodas — Qissa Resto Cafe was born to bring people together over honest, delicious food crafted with heart.</p>
+        <p class="journey-subtitle" style="color:rgba(255,255,255,0.92)">Signature comfort feasts &amp; late-night cravings.</p>
+        <p class="journey-text" style="color:rgba(255,255,255,0.84)">Expanding the flavor journey, Amal built <strong>Qissa Cafe</strong> &mdash; serving loaded Shawarmas, crispy Broasts, Burgers, chilled Mojitos, and thick Faloodas.</p>
+      </div>
+      <div class="floating-food-cluster">
+        <span class="floating-food-pill dark-pill anim-drift-1"><span class="food-emoji">&#127791;</span> Shawarma</span>
+        <span class="floating-food-pill dark-pill anim-drift-2"><span class="food-emoji">&#127831;</span> Crisp Broast</span>
+        <span class="floating-food-pill dark-pill anim-drift-3"><span class="food-emoji">&#127865;</span> Mojito</span>
       </div>
     </div>
-    <div class="story-card stat-card">
+
+    <!-- Chapter 04: The Craft & Standard -->
+    <div class="story-journey-card story-card-craft reveal">
       <div class="story-card-glass-shine"></div>
-      <div class="stat-top">
-        <span class="big-number">01</span>
-        <span class="story-chip">Founder</span>
+      <div class="journey-card-top">
+        <span class="journey-chapter-tag">CHAPTER 04 &bull; THE PROMISE</span>
+        <span class="journey-num">04</span>
       </div>
-      <h3>Amal VP</h3>
-      <p>Qissa is founded and operated by <strong>Amal VP</strong>, a 19-year-old entrepreneur with a passion for quality food and memorable dining experiences.</p>
-    </div>
-    <div class="story-card stat-card">
-      <div class="story-card-glass-shine"></div>
-      <div class="stat-top">
-        <span class="big-number">02</span>
-        <span class="story-chip">Thuvvur Center</span>
+      <div class="journey-body">
+        <h3>Authentic Taste</h3>
+        <p class="journey-subtitle">Two landmark spots, one uncompromising standard.</p>
+        <p class="journey-text">From a 2-minute tea break at Chaywala to a dinner feast at Qissa Cafe, our philosophy stays the same: fresh ingredients, hygienic preparation, and honest flavors made with heart.</p>
       </div>
-      <h3>Chaywala</h3>
-      <p>Amal also owns <strong>Chaywala</strong>, the popular chai shop located in <strong>Thuvvur Center</strong>, well known for authentic hot teas, snacks, and daily gatherings.</p>
-    </div>
-    <div class="story-card stat-card">
-      <div class="story-card-glass-shine"></div>
-      <div class="stat-top">
-        <span class="big-number">03</span>
-        <span class="story-chip">One Vision</span>
+      <div class="floating-food-cluster">
+        <span class="floating-food-pill anim-drift-1"><span class="food-emoji">&#127807;</span> 100% Fresh</span>
+        <span class="floating-food-pill anim-drift-2"><span class="food-emoji">&#9889;</span> Fast Service</span>
+        <span class="floating-food-pill anim-drift-3"><span class="food-emoji">&#10084;&#65039;</span> Made with Care</span>
       </div>
-      <h3>Authentic Taste</h3>
-      <p>From hot cups of tea at Chaywala to crafted meals at Qissa Cafe, every item is prepared fresh with genuine care and authentic taste.</p>
     </div>
   </div>
 </div>
@@ -276,6 +332,6 @@
   </button>
 </div>
 <div class="toast" id="toast"><span class="toast-icon" id="toastIcon">&#10003;</span><span id="toastText">Added to cart</span></div>
-<script src="app.js?v=8.0"></script>
+<script src="app.js?v=8.5"></script>
 </body>
 </html>

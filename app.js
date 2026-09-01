@@ -876,7 +876,13 @@ function showPage(p) {
   currentPage = p;
   document.querySelectorAll(".page").forEach(s => s.classList.remove("active"));
   const t = document.getElementById("page-" + p);
-  if (t) t.classList.add("active");
+  if (t) {
+    t.classList.add("active");
+    t.querySelectorAll(".reveal").forEach((el, idx) => {
+      observer.observe(el);
+      setTimeout(() => el.classList.add("visible"), 80 + (idx * 60));
+    });
+  }
   document.querySelectorAll(".nav-links a").forEach(a => a.classList.toggle("active", a.dataset.page === p));
   window.scrollTo({ top: 0, behavior: "smooth" });
   if (p === "menu") renderMenu();

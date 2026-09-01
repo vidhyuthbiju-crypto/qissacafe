@@ -547,10 +547,10 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
 }
 
 .story-section { padding-top: 70px; }
-/* ===== Story Page - Apple Liquid Glass & Depth ===== */
+/* ===== Story Page - Apple Liquid Glass, Narrative Workflow & Floating Food Animations ===== */
 .story-hero {
   background: linear-gradient(135deg, #FDF6E4 0%, #F3E6C6 50%, #E9D2A0 100%);
-  padding: 85px 0 20px;
+  padding: 85px 0 24px;
 }
 .story-hero .kicker {
   font-family: var(--font-accent);
@@ -573,235 +573,318 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
 .story-wrapper {
   position: relative;
   overflow: hidden;
-  padding: 20px 0 70px;
+  padding: 24px 0 70px;
 }
 
 .story-ambient-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(55px);
+  filter: blur(60px);
   pointer-events: none;
   z-index: 0;
   opacity: 0.55;
-  will-change: transform;
 }
 .story-orb-1 {
-  width: 360px;
-  height: 360px;
-  left: -40px;
+  width: 380px;
+  height: 380px;
+  left: -50px;
   top: 10%;
-  background: radial-gradient(circle, rgba(58, 99, 57, 0.30), rgba(111, 166, 92, 0.08) 65%, transparent);
+  background: radial-gradient(circle, rgba(58, 99, 57, 0.32), rgba(111, 166, 92, 0.08) 65%, transparent);
 }
 .story-orb-2 {
-  width: 320px;
-  height: 320px;
-  right: -20px;
-  bottom: 15%;
-  background: radial-gradient(circle, rgba(212, 169, 60, 0.28), rgba(239, 203, 122, 0.06) 65%, transparent);
+  width: 340px;
+  height: 340px;
+  right: -30px;
+  bottom: 12%;
+  background: radial-gradient(circle, rgba(212, 169, 60, 0.30), rgba(239, 203, 122, 0.06) 65%, transparent);
 }
 
-.story-grid {
+/* Narrative Timeline Workflow Bar */
+.story-timeline-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 24px rgba(28, 38, 20, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  position: relative;
+  z-index: 1;
+  overflow-x: auto;
+}
+.timeline-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-accent);
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.timeline-step .step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--green);
+  color: white;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.65rem;
+  font-weight: 900;
+}
+.timeline-arrow {
+  color: var(--gold-2);
+  font-size: 0.78rem;
+  font-weight: 800;
+  opacity: 0.7;
+}
+
+/* Symmetrical 2x2 Story Grid */
+.story-grid-journey {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
 }
 
-/* Liquid Glass Base Card */
-.story-card {
+/* Liquid Glass Journey Card */
+.story-journey-card {
   position: relative;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.76) 0%, rgba(254, 246, 230, 0.42) 50%, rgba(255, 255, 255, 0.62) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.80) 0%, rgba(254, 246, 230, 0.44) 50%, rgba(255, 255, 255, 0.70) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
   border-radius: 24px;
-  padding: 24px 22px;
+  padding: 24px 22px 20px;
   backdrop-filter: blur(28px) saturate(1.8);
   -webkit-backdrop-filter: blur(28px) saturate(1.8);
   box-shadow: 
-    0 14px 38px rgba(28, 38, 20, 0.07),
+    0 16px 40px rgba(28, 38, 20, 0.08),
     0 2px 6px rgba(0, 0, 0, 0.02),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.95),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.95),
     inset 0 -1px 1px rgba(0, 0, 0, 0.02);
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
-.story-card:hover {
-  transform: translateY(-4px);
+.story-journey-card:hover {
+  transform: translateY(-5px);
   box-shadow: 
-    0 20px 48px rgba(28, 38, 20, 0.12),
-    0 4px 10px rgba(0, 0, 0, 0.04),
+    0 24px 50px rgba(28, 38, 20, 0.13),
+    0 4px 12px rgba(0, 0, 0, 0.04),
     inset 0 1.5px 2px rgba(255, 255, 255, 1);
 }
+
 .story-card-glass-shine {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 45%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0) 100%);
+  height: 48%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0) 100%);
   pointer-events: none;
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
 }
 
-/* Emerald Liquid Glass Main Card */
-.story-main {
-  grid-row: span 3;
-  min-height: 380px;
+.journey-card-top {
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-  background: linear-gradient(145deg, rgba(24, 44, 23, 0.94) 0%, rgba(36, 68, 35, 0.90) 50%, rgba(48, 86, 46, 0.86) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  color: white;
-  box-shadow: 
-    0 22px 55px rgba(18, 30, 16, 0.22),
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.45);
-}
-.story-main-content {
+  align-items: center;
   position: relative;
   z-index: 1;
 }
-.story-logo-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-.story-logo-img {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  object-fit: cover;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-}
-.story-logo-brand strong {
-  font-family: var(--font-accent);
-  font-size: 1.15rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  color: white;
-  display: block;
-  line-height: 1.1;
-}
-.story-logo-brand span {
+.journey-chapter-tag {
   font-family: var(--font-accent);
   font-size: 0.62rem;
-  letter-spacing: 0.16em;
-  color: var(--gold-2);
-  font-weight: 700;
-}
-.story-pill {
-  display: inline-block;
-  font-family: var(--font-accent);
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
   font-weight: 850;
-  color: var(--gold-2);
-  background: rgba(212, 169, 60, 0.16);
-  border: 1px solid rgba(212, 169, 60, 0.3);
-  padding: 4px 10px;
-  border-radius: 999px;
-  margin-bottom: 12px;
+  letter-spacing: 0.12em;
+  color: var(--green);
   text-transform: uppercase;
+  background: rgba(58, 99, 57, 0.08);
+  border: 1px solid rgba(58, 99, 57, 0.15);
+  padding: 3px 9px;
+  border-radius: 999px;
 }
-.story-main h3 {
-  font-family: var(--font-display);
-  font-size: 1.65rem;
+.journey-num {
+  font-family: var(--font-accent);
+  font-weight: 900;
+  font-size: 1.6rem;
+  color: rgba(58, 99, 57, 0.22);
+  line-height: 1;
+}
+
+.journey-body {
+  position: relative;
+  z-index: 1;
+}
+.journey-body h3 {
+  font-family: var(--font-items);
+  font-size: 1.35rem;
+  font-weight: 850;
+  color: var(--ink);
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.age-badge, .location-badge {
+  font-family: var(--font-accent);
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(212, 169, 60, 0.18);
+  color: #795712;
+  border: 1px solid rgba(212, 169, 60, 0.35);
+  letter-spacing: 0.04em;
+}
+.journey-subtitle {
+  font-family: var(--font-accent);
+  font-size: 0.80rem;
   font-weight: 700;
-  color: white;
-  margin: 0 0 10px;
-  line-height: 1.2;
+  color: var(--green);
+  margin: 0 0 8px;
+  letter-spacing: 0.01em;
 }
-.story-main p {
+.journey-text {
   font-family: var(--font-sans);
-  font-size: 0.88rem;
-  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.86rem;
+  color: #4C5240;
   line-height: 1.65;
   margin: 0;
 }
-
-/* Stat / Highlight Cards */
-.stat-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  min-height: 145px;
-  padding: 18px 20px;
-}
-.stat-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  position: relative;
-  z-index: 1;
-}
-.big-number {
-  font-family: var(--font-accent);
-  font-weight: 900;
-  font-size: 1.7rem;
-  color: rgba(58, 99, 57, 0.22);
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-.story-chip {
-  font-family: var(--font-accent);
-  font-size: 0.60rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--green);
-  background: rgba(58, 99, 57, 0.09);
-  border: 1px solid rgba(58, 99, 57, 0.16);
-  padding: 3px 8px;
-  border-radius: 999px;
-}
-.stat-card h3 {
-  font-family: var(--font-items);
-  font-size: 1.12rem;
-  font-weight: 800;
-  margin: 0 0 6px;
-  color: var(--ink);
-  letter-spacing: -0.015em;
-  position: relative;
-  z-index: 1;
-}
-.stat-card p {
-  font-family: var(--font-sans);
-  font-size: 0.84rem;
-  color: #555A48;
-  line-height: 1.55;
-  margin: 0;
-  position: relative;
-  z-index: 1;
-}
-.stat-card p strong {
+.journey-text strong {
   color: var(--ink);
   font-weight: 700;
 }
 
+/* Card 03: Qissa Resto Cafe (Deep Emerald Liquid Glass) */
+.story-card-qissa {
+  background: linear-gradient(145deg, rgba(22, 42, 21, 0.95) 0%, rgba(35, 66, 34, 0.92) 50%, rgba(46, 84, 44, 0.88) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: white;
+  box-shadow: 
+    0 20px 50px rgba(18, 30, 16, 0.24),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.45);
+}
+.story-card-qissa .journey-chapter-tag {
+  color: var(--gold-2);
+  background: rgba(212, 169, 60, 0.16);
+  border-color: rgba(212, 169, 60, 0.32);
+}
+.story-card-qissa .journey-num {
+  color: rgba(255, 255, 255, 0.22);
+}
+.story-logo-mini {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.story-logo-img {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Floating Food Animated Cluster */
+.floating-food-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(58, 99, 57, 0.14);
+  position: relative;
+  z-index: 1;
+}
+.story-card-qissa .floating-food-cluster {
+  border-top-color: rgba(255, 255, 255, 0.15);
+}
+.floating-food-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--font-accent);
+  font-size: 0.70rem;
+  font-weight: 800;
+  color: var(--ink);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  will-change: transform;
+}
+.floating-food-pill.dark-pill {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+.food-emoji {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+/* Continuous Light Moving Animations */
+.anim-drift-1 {
+  animation: floatDrift1 4.2s ease-in-out infinite;
+}
+.anim-drift-2 {
+  animation: floatDrift2 4.8s ease-in-out infinite 0.7s;
+}
+.anim-drift-3 {
+  animation: floatDrift1 5.2s ease-in-out infinite 1.4s;
+}
+
+@keyframes floatDrift1 {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(2deg); }
+}
+@keyframes floatDrift2 {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(-2deg); }
+}
+
 @media (max-width: 900px) {
-  .story-grid {
+  .story-grid-journey {
     grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  .story-main {
-    grid-row: auto;
-    min-height: auto;
-    padding: 22px 18px;
-  }
-  .stat-card {
-    min-height: auto;
-    padding: 18px 16px;
+    gap: 14px;
   }
   .story-hero {
     padding: 55px 0 16px !important;
   }
   .story-wrapper {
     padding: 14px 0 50px;
+  }
+  .story-journey-card {
+    padding: 20px 18px 16px;
+    border-radius: 20px;
+  }
+  .story-timeline-bar {
+    padding: 8px 12px;
+    margin-bottom: 16px;
+  }
+  .timeline-step {
+    font-size: 0.70rem;
   }
 }
 
