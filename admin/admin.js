@@ -294,10 +294,34 @@ function renderMenuAdmin() {
   const q = $("#menuAdminSearch").value.trim().toLowerCase();
   const rows = menuItems.filter(x => !q || x.name.toLowerCase().includes(q) || x.category.toLowerCase().includes(q));
   $("#menuTable").innerHTML = rows.map(x => {
-    const bestBadge = x.is_bestseller ? '<span style="background:linear-gradient(135deg,#FFE28A,#D4A93C);color:#1A2312;padding:2px 7px;border-radius:999px;font-size:.62rem;font-weight:850;letter-spacing:.05em;margin-left:6px">⭐ BEST</span>' : '';
-    return `<tr><td style="display:flex;gap:12px;align-items:center">${x.image?`<img src="${esc(x.image)}" style="width:52px;height:52px;object-fit:cover;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,0.1)">`:`<span style="width:52px;height:52px;display:grid;place-items:center;background:#e8e0ce;border-radius:12px;font-size:.65rem;color:#999">No img</span>`}<div><b>${esc(x.name)} ${bestBadge}</b><small>${esc(x.description)}</small></div></td><td>${esc(x.category)}</td><td><b>${money(x.price)}</b></td><td><span class="pill ${x.availability}">${x.availability === 'low' ? 'Almost sold out' : x.availability.replace('_', ' ')}</span></td><td><div class="row-actions"><button class="icon" onclick="editItem(${x.id})" aria-label="Edit ${esc(x.name)}">Edit</button><button class="icon danger" onclick="deleteItem(${x.id})" aria-label="Delete ${esc(x.name)}">Delete</button></div></td></tr>`;
+    const isBest = !!x.is_bestseller;
+    const bestBtn = `<button class="icon" onclick="toggleBestseller(${x.id})" title="${isBest ? 'Click to remove Bestseller' : 'Click to mark as Bestseller'}" style="background:${isBest ? 'linear-gradient(135deg,#FFE28A,#D4A93C)' : 'rgba(0,0,0,0.06)'};color:${isBest ? '#1A2312' : '#777'};border:1px solid ${isBest ? 'rgba(212,169,60,0.6)' : 'rgba(0,0,0,0.1)'};padding:3px 8px;border-radius:999px;font-size:.65rem;font-weight:850;cursor:pointer;display:inline-flex;align-items:center;gap:3px;margin-left:6px">${isBest ? '⭐ BESTSELLER' : '☆ Make Best'}</button>`;
+    
+    return `<tr><td style="display:flex;gap:12px;align-items:center">${x.image?`<img src="${esc(x.image)}" style="width:52px;height:52px;object-fit:cover;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,0.1)">`:`<span style="width:52px;height:52px;display:grid;place-items:center;background:#e8e0ce;border-radius:12px;font-size:.65rem;color:#999">No img</span>`}<div><div style="display:flex;align-items:center;flex-wrap:wrap"><b>${esc(x.name)}</b>${bestBtn}</div><small>${esc(x.description)}</small></div></td><td>${esc(x.category)}</td><td><b>${money(x.price)}</b></td><td><span class="pill ${x.availability}">${x.availability === 'low' ? 'Almost sold out' : x.availability.replace('_', ' ')}</span></td><td><div class="row-actions"><button class="icon" onclick="editItem(${x.id})" aria-label="Edit ${esc(x.name)}">Edit</button><button class="icon danger" onclick="deleteItem(${x.id})" aria-label="Delete ${esc(x.name)}">Delete</button></div></td></tr>`;
   }).join('');
 }
+
+window.toggleBestseller = async id => {
+  const item = menuItems.find(x => x.id === id);
+  if (!item) return;
+  const oldVal = item.is_bestseller;
+  item.is_bestseller = !oldVal;
+  renderMenuAdmin();
+  toast(item.is_bestseller ? `⭐ '${item.name}' marked as Bestseller!` : `'${item.name}' removed from Bestsellers`);
+
+  try {
+    const res = await api(`/api/admin/menu/${id}/toggle-bestseller`, { method: "POST" });
+    if (res && res.item) {
+      const idx = menuItems.findIndex(x => x.id === id);
+      if (idx !== -1) menuItems[idx] = res.item;
+      renderMenuAdmin();
+    }
+  } catch (err) {
+    item.is_bestseller = oldVal;
+    renderMenuAdmin();
+    toast(err.message);
+  }
+};
 
 $("#menuAdminSearch").addEventListener('input', renderMenuAdmin);
 
@@ -314,7 +338,7 @@ function openItem(item = null) {
   $("#itemCategory").value = item?.category || '';
   $("#itemPrice").value = item?.price ?? '';
   $("#itemAvailability").value = item?.availability || 'available';
-  if ($("#itemIsBestseller")) $("#itemIsBestseller").value = item?.is_bestseller ? "1" : "0";
+  if ($("#itemIsBestseller")) $("#itemIsBestseller").value = (item?.is_bestseller ? "1" : "0");
   $("#itemImage").value = item?.image || '';
   $("#itemDescription").value = item?.description || '';
   $("#itemImageFile").value=""; setPreview(item?.image||"");

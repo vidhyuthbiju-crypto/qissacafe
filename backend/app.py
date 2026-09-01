@@ -149,7 +149,7 @@ def _run_backup_worker():
                 })
 
             data = {
-                "version": "1.0",
+                "version": "1.1",
                 "backed_up_at": datetime.now().isoformat(),
                 "orders": [
                     {
@@ -169,6 +169,21 @@ def _run_backup_worker():
                     }
                     for o in orders_rows
                 ],
+                "menu_items": [
+                    {
+                        "id": m["id"],
+                        "category": m["category"],
+                        "name": m["name"],
+                        "price": m["price"],
+                        "description": m["description"],
+                        "availability": m["availability"],
+                        "sort_order": m["sort_order"],
+                        "image": m["image"] if "image" in m.keys() else "",
+                        "is_veg": m["is_veg"] if "is_veg" in m.keys() else 0,
+                        "is_bestseller": m["is_bestseller"] if "is_bestseller" in m.keys() else 0
+                    }
+                    for m in menu_rows
+                ],
                 "settings": {s["key"]: s["value"] for s in settings_rows},
                 "custom_menu_count": len(menu_rows)
             }
@@ -181,7 +196,7 @@ def _run_backup_worker():
                     temp_file.replace(path)
                 except Exception:
                     pass
-            logger.info(f"Async backup complete: {len(orders_rows)} orders persisted to storage")
+            logger.info(f"Async backup complete: {len(orders_rows)} orders and {len(menu_rows)} menu items persisted to storage")
         except Exception as e:
             logger.error(f"Error during async backup: {e}")
 
@@ -190,12 +205,15 @@ def schedule_background_backup():
     t = threading.Thread(target=_run_backup_worker, daemon=True)
     t.start()
 
-def backup_data_to_disk():
-    schedule_background_backup()
+def backup_data_to_disk(sync=False):
+    if sync:
+        _run_backup_worker()
+    else:
+        schedule_background_backup()
 
 
 def restore_data_from_disk(conn):
-    """Auto-restore historical orders and settings if database was restarted or rebuilt."""
+    """Auto-restore historical orders, menu items with bestsellers, and settings if database was restarted or rebuilt."""
     backup_file = None
     if ORDERS_BACKUP_PATH.exists():
         backup_file = ORDERS_BACKUP_PATH
@@ -209,52 +227,86 @@ def restore_data_from_disk(conn):
         with open(backup_file, "r", encoding="utf-8") as f:
             data = json.load(f)
 
+        # Restore/sync menu items (including is_bestseller, price, availability, image, is_veg)
+        backup_menu = data.get("menu_items", [])
+        if backup_menu:
+            restored_menu_items = 0
+            for item in backup_menu:
+                name = item.get("name")
+                if not name:
+                    continue
+                is_best = 1 if item.get("is_bestseller") in (True, 1, "1", "true", "True") else 0
+                is_veg = 1 if item.get("is_veg") in (True, 1, "1", "true", "True") else 0
+                price = int(item.get("price", 100))
+                availability = str(item.get("availability", "available"))
+                image = str(item.get("image", ""))
+                category = str(item.get("category", "Shawarma"))
+                desc = str(item.get("description", ""))
+
+                row = conn.execute("SELECT id FROM menu_items WHERE name=?", (name,)).fetchone()
+                if row:
+                    conn.execute(
+                        """UPDATE menu_items SET category=?,price=?,description=?,availability=?,image=?,is_veg=?,is_bestseller=?
+                           WHERE id=?""",
+                        (category, price, desc, availability, image, is_veg, is_best, row["id"])
+                    )
+                else:
+                    max_sort = conn.execute("SELECT COALESCE(MAX(sort_order),0)+1 n FROM menu_items").fetchone()["n"]
+                    conn.execute(
+                        """INSERT INTO menu_items(category,name,price,description,availability,sort_order,image,is_veg,is_bestseller)
+                           VALUES(?,?,?,?,?,?,?,?,?)""",
+                        (category, name, price, desc, availability, max_sort, image, is_veg, is_best)
+                    )
+                restored_menu_items += 1
+            if restored_menu_items > 0:
+                logger.info(f"Auto-restored and synced {restored_menu_items} menu items (with bestsellers and pricing)")
+
         backup_orders = data.get("orders", [])
-        if not backup_orders:
-            return
+        if backup_orders:
+            existing_codes = {r["order_code"] for r in conn.execute("SELECT order_code FROM orders WHERE order_code IS NOT NULL").fetchall()}
+            restored_orders = 0
 
-        existing_codes = {r["order_code"] for r in conn.execute("SELECT order_code FROM orders WHERE order_code IS NOT NULL").fetchall()}
-        restored_orders = 0
+            for o in backup_orders:
+                code = o.get("order_code")
+                if not code or code in existing_codes:
+                    continue
 
-        for o in backup_orders:
-            code = o.get("order_code")
-            if not code or code in existing_codes:
-                continue
-
-            cur = conn.execute(
-                """INSERT INTO orders(order_code,customer_name,phone,order_type,table_number,delivery_address,notes,total,status,created_at,updated_at)
-                   VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
-                (
-                    code,
-                    o.get("customer_name", "Customer"),
-                    o.get("phone", ""),
-                    o.get("order_type", "Takeaway"),
-                    o.get("table_number", ""),
-                    o.get("delivery_address", ""),
-                    o.get("notes", ""),
-                    o.get("total", 0),
-                    o.get("status", "completed"),
-                    o.get("created_at", datetime.now().isoformat()),
-                    o.get("updated_at", datetime.now().isoformat())
-                )
-            )
-            new_oid = cur.lastrowid
-            existing_codes.add(code)
-            restored_orders += 1
-
-            for it in o.get("items", []):
-                conn.execute(
-                    """INSERT INTO order_items(order_id,menu_item_id,item_name,unit_price,qty,line_total)
-                       VALUES(?,?,?,?,?,?)""",
+                cur = conn.execute(
+                    """INSERT INTO orders(order_code,customer_name,phone,order_type,table_number,delivery_address,notes,total,status,created_at,updated_at)
+                       VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
                     (
-                        new_oid,
-                        it.get("menu_item_id"),
-                        it.get("item_name", "Item"),
-                        it.get("unit_price", 0),
-                        it.get("qty", 1),
-                        it.get("line_total", 0)
+                        code,
+                        o.get("customer_name", "Customer"),
+                        o.get("phone", ""),
+                        o.get("order_type", "Takeaway"),
+                        o.get("table_number", ""),
+                        o.get("delivery_address", ""),
+                        o.get("notes", ""),
+                        o.get("total", 0),
+                        o.get("status", "completed"),
+                        o.get("created_at", datetime.now().isoformat()),
+                        o.get("updated_at", datetime.now().isoformat())
                     )
                 )
+                new_oid = cur.lastrowid
+                existing_codes.add(code)
+                restored_orders += 1
+
+                for it in o.get("items", []):
+                    conn.execute(
+                        """INSERT INTO order_items(order_id,menu_item_id,item_name,unit_price,qty,line_total)
+                           VALUES(?,?,?,?,?,?)""",
+                        (
+                            new_oid,
+                            it.get("menu_item_id"),
+                            it.get("item_name", "Item"),
+                            it.get("unit_price", 0),
+                            it.get("qty", 1),
+                            it.get("line_total", 0)
+                        )
+                    )
+            if restored_orders > 0:
+                logger.info(f"Auto-restored {restored_orders} historical orders from persistent backup file")
 
         # Restore custom settings if not already present
         backup_settings = data.get("settings", {})
@@ -262,8 +314,6 @@ def restore_data_from_disk(conn):
             conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)", (k, v))
 
         conn.commit()
-        if restored_orders > 0:
-            logger.info(f"Auto-restored {restored_orders} historical orders from persistent backup file")
     except Exception as e:
         logger.error(f"Error during restore_data_from_disk: {e}")
 
@@ -337,12 +387,15 @@ def init_db():
     try: conn.execute("ALTER TABLE orders ADD COLUMN delivery_address TEXT NOT NULL DEFAULT ''")
     except Exception: pass
 
-    # Seed veg / bestseller defaults for existing items if not set
-    veg_categories = {"Classic Shake", "Falooda", "Mojito", "Soda", "Lemon Juice", "Hot"}
-    for cat in veg_categories:
-        conn.execute("UPDATE menu_items SET is_veg=1 WHERE category=?", (cat,))
-    conn.execute("UPDATE menu_items SET is_veg=1 WHERE name LIKE '%Veg%' OR name LIKE '%Vegetable%' OR name LIKE '%Paneer%'")
-    conn.execute("UPDATE menu_items SET is_bestseller=1 WHERE name IN ('Rumali Full Meat', '2 Pcs Chicken Broast', 'Chicken Double Decker', 'Blue Lime', 'Shawarma Roll', 'Oreo Shake', 'Chicken Burger')")
+    # Seed veg / bestseller defaults ONLY ONCE on initial setup if not already seeded
+    if setting(conn, "bestseller_seeded", "") != "1":
+        veg_categories = {"Classic Shake", "Falooda", "Mojito", "Soda", "Lemon Juice", "Hot"}
+        for cat in veg_categories:
+            conn.execute("UPDATE menu_items SET is_veg=1 WHERE category=?", (cat,))
+        conn.execute("UPDATE menu_items SET is_veg=1 WHERE name LIKE '%Veg%' OR name LIKE '%Vegetable%' OR name LIKE '%Paneer%'")
+        conn.execute("UPDATE menu_items SET is_bestseller=1 WHERE name IN ('Rumali Full Meat', '2 Pcs Chicken Broast', 'Chicken Double Decker', 'Blue Lime', 'Shawarma Roll', 'Oreo Shake', 'Chicken Burger')")
+        conn.execute("INSERT OR REPLACE INTO settings(key,value) VALUES('bestseller_seeded', '1')")
+
     count = conn.execute("SELECT COUNT(*) AS c FROM menu_items").fetchone()["c"]
     if count == 0:
         logger.info("Seeding database with initial menu items")
@@ -502,7 +555,7 @@ def init_db():
     conn.close()
 
     # Create persistent backup file
-    backup_data_to_disk()
+    backup_data_to_disk(sync=True)
     logger.info("Database initialized successfully with persistent auto-recovery")
 
 
@@ -952,7 +1005,7 @@ def add_menu_item():
         (category, name, price, description, availability, max_sort, image, is_veg, is_bestseller)
     )
     conn.commit()
-    backup_data_to_disk()
+    backup_data_to_disk(sync=True)
 
     row = conn.execute("SELECT * FROM menu_items WHERE id=?", (cur.lastrowid,)).fetchone()
     out = item_json(row)
@@ -981,10 +1034,16 @@ def edit_menu_item(item_id):
     image = str(data.get("image", row["image"] if "image" in row.keys() else "")).strip()[:500]
     
     current_veg = row["is_veg"] if "is_veg" in row.keys() else 0
-    is_veg = 1 if data.get("is_veg", current_veg) in (True, 1, "1", "true") else 0
+    if "is_veg" in data:
+        is_veg = 1 if data["is_veg"] in (True, 1, "1", "true", "True") else 0
+    else:
+        is_veg = current_veg
 
     current_best = row["is_bestseller"] if "is_bestseller" in row.keys() else 0
-    is_bestseller = 1 if data.get("is_bestseller", current_best) in (True, 1, "1", "true") else 0
+    if "is_bestseller" in data:
+        is_bestseller = 1 if data["is_bestseller"] in (True, 1, "1", "true", "True") else 0
+    else:
+        is_bestseller = current_best
 
     try:
         price = int(data.get("price", row["price"]))
@@ -1002,15 +1061,43 @@ def edit_menu_item(item_id):
         (category, name, price, description, availability, image, is_veg, is_bestseller, item_id)
     )
     conn.commit()
-    backup_data_to_disk()
+    backup_data_to_disk(sync=True)
 
     updated = conn.execute("SELECT * FROM menu_items WHERE id=?", (item_id,)).fetchone()
     out = item_json(updated)
     broadcast_admin_event("menu_updated", {"action": "edit", "item": out})
     conn.close()
 
-    logger.info(f"Menu item updated: {name} - Rs.{price}")
+    logger.info(f"Menu item updated: {name} - Rs.{price} (Bestseller: {bool(is_bestseller)})")
     return jsonify(item=out)
+
+
+@app.post("/api/admin/menu/<int:item_id>/toggle-bestseller")
+@admin_required
+def toggle_bestseller(item_id):
+    conn = db()
+    row = conn.execute("SELECT * FROM menu_items WHERE id=?", (item_id,)).fetchone()
+    if not row:
+        conn.close()
+        return jsonify(error="Menu item not found"), 404
+
+    current_best = row["is_bestseller"] if "is_bestseller" in row.keys() else 0
+    new_best = 0 if current_best == 1 else 1
+
+    conn.execute(
+        "UPDATE menu_items SET is_bestseller=?, updated_at=CURRENT_TIMESTAMP WHERE id=?",
+        (new_best, item_id)
+    )
+    conn.commit()
+    backup_data_to_disk(sync=True)
+
+    updated = conn.execute("SELECT * FROM menu_items WHERE id=?", (item_id,)).fetchone()
+    out = item_json(updated)
+    broadcast_admin_event("menu_updated", {"action": "edit", "item": out})
+    conn.close()
+
+    logger.info(f"Item '{row['name']}' bestseller toggled to: {bool(new_best)}")
+    return jsonify(item=out, is_bestseller=bool(new_best))
 
 
 @app.delete("/api/admin/menu/<int:item_id>")
@@ -1020,7 +1107,7 @@ def delete_menu_item(item_id):
     row = conn.execute("SELECT name FROM menu_items WHERE id=?", (item_id,)).fetchone()
     cur = conn.execute("DELETE FROM menu_items WHERE id=?", (item_id,))
     conn.commit()
-    backup_data_to_disk()
+    backup_data_to_disk(sync=True)
     broadcast_admin_event("menu_updated", {"action": "delete", "item_id": item_id})
     conn.close()
 
