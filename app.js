@@ -692,12 +692,211 @@ function updateTrackingStepper(status) {
   });
 }
 
+let currentTrackingOrderData = null;
+let orderNotificationEnabled = false;
+let lastKnownOrderStatus = "";
+
+function setupNotificationButton() {
+  const btn = $("#enableNotifyBtn");
+  const card = $("#notifyPromptCard");
+  if (!btn || !card) return;
+
+  if (!("Notification" in window)) {
+    card.style.display = "none";
+    return;
+  }
+
+  if (Notification.permission === "granted") {
+    orderNotificationEnabled = true;
+    btn.textContent = "✓ Alerts Active";
+    btn.classList.add("active");
+  } else if (Notification.permission === "denied") {
+    card.style.display = "none";
+  }
+
+  btn.onclick = async () => {
+    if (Notification.permission === "granted") {
+      orderNotificationEnabled = true;
+      btn.textContent = "✓ Alerts Active";
+      btn.classList.add("active");
+      showToast("🔔 Order notifications are enabled!");
+      return;
+    }
+
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm === "granted") {
+        orderNotificationEnabled = true;
+        btn.textContent = "✓ Alerts Active";
+        btn.classList.add("active");
+        showToast("🔔 You will be alerted when food is ready!");
+        try {
+          new Notification("🔔 Qissa Live Tracking Active", {
+            body: `We will notify you the second your order #${activeTrackingOrderCode} is ready!`,
+            icon: "assets/qissa-logo.jpeg"
+          });
+        } catch (_) {}
+      } else {
+        card.style.display = "none";
+      }
+    } catch (_) {}
+  };
+}
+
+function checkOrderNotificationTrigger(orderCode, newStatus) {
+  if (newStatus === lastKnownOrderStatus) return;
+  lastKnownOrderStatus = newStatus;
+
+  if (orderNotificationEnabled && ("Notification" in window) && Notification.permission === "granted") {
+    try {
+      if (newStatus === "ready") {
+        new Notification("🍲 Your Qissa Order is Ready!", {
+          body: `Order #${orderCode} is packed hot & ready for you!`,
+          icon: "assets/qissa-logo.jpeg"
+        });
+      } else if (newStatus === "completed") {
+        new Notification("🎉 Order Delivered / Completed", {
+          body: `Thank you for dining with Qissa Resto Cafe! Enjoy your food!`,
+          icon: "assets/qissa-logo.jpeg"
+        });
+      }
+    } catch (_) {}
+  }
+}
+
+function generatePrintableReceipt(order) {
+  if (!order) return;
+  const items = order.items || [];
+  const orderCode = order.order_code || `Q${order.order_id || order.id || "0000"}`;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  const timeStr = now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+
+  let typeDisplay = order.order_type || "Takeaway";
+  if (order.order_type === "Dine-in" && order.table_number) {
+    typeDisplay = `Dine-in (Table ${order.table_number})`;
+  } else if (order.order_type === "Delivery" && order.delivery_address) {
+    typeDisplay = `Delivery: ${order.delivery_address}`;
+  }
+
+  const receiptHtml = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Receipt - #${orderCode} - Qissa Cafe</title>
+  <style>
+    @page { size: 80mm auto; margin: 4mm; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #111;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+      padding: 8px;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .header { text-align: center; border-bottom: 1.5px dashed #333; padding-bottom: 10px; margin-bottom: 10px; }
+    .header h1 { margin: 0; font-size: 19px; font-weight: 850; letter-spacing: 1.5px; }
+    .header p { margin: 2px 0; font-size: 11px; color: #555; }
+    .order-info { margin-bottom: 10px; font-size: 12px; }
+    .order-info div { display: flex; justify-content: space-between; margin-bottom: 3px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 12px; }
+    th { text-align: left; border-bottom: 1px solid #333; padding: 4px 0; font-weight: 700; }
+    th.r, td.r { text-align: right; }
+    td { padding: 4px 0; vertical-align: top; }
+    .totals { border-top: 1.5px dashed #333; padding-top: 8px; margin-bottom: 12px; }
+    .totals div { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px; }
+    .totals .grand-total { font-size: 16px; font-weight: 850; border-top: 1px solid #111; padding-top: 4px; margin-top: 4px; }
+    .footer { text-align: center; border-top: 1.5px dashed #333; padding-top: 10px; font-size: 11px; color: #555; }
+    .footer strong { color: #111; display: block; margin-bottom: 3px; }
+    @media print {
+      body { width: 100%; max-width: 100%; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>QISSA RESTO CAFE</h1>
+    <p>Nilambur Road, Kerala • +91 96457 00585</p>
+    <p>Every Bite Has a Story</p>
+  </div>
+  
+  <div class="order-info">
+    <div><span>Order:</span><strong>#${orderCode}</strong></div>
+    <div><span>Date:</span><span>${dateStr} ${timeStr}</span></div>
+    <div><span>Type:</span><strong>${escapeHtml(typeDisplay)}</strong></div>
+    <div><span>Customer:</span><span>${escapeHtml(order.customer_name || "Guest")} (${escapeHtml(order.phone || "")})</span></div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th class="r">Qty</th>
+        <th class="r">Amt (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${items.map(it => `
+        <tr>
+          <td>${escapeHtml(it.name || it.item_name)}</td>
+          <td class="r">${it.qty}</td>
+          <td class="r">${(it.line_total || ((it.price || it.unit_price) * it.qty)).toFixed(2)}</td>
+        </tr>
+      `).join("")}
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <div><span>Subtotal:</span><span>₹${Number(order.total).toFixed(2)}</span></div>
+    <div><span>Tax / GST:</span><span>₹0.00</span></div>
+    <div class="grand-total"><span>Total Amount:</span><span>₹${Number(order.total).toFixed(2)}</span></div>
+  </div>
+
+  <div class="footer">
+    <strong>✨ Thank You for Ordering! ✨</strong>
+    <p>Follow us on Instagram: @qissacafe</p>
+    <p>Visit again!</p>
+  </div>
+
+  <script>
+    window.onload = function() {
+      setTimeout(function() {
+        window.print();
+      }, 250);
+    };
+  </script>
+</body>
+</html>`;
+
+  const frame = document.getElementById("customerReceiptFrame");
+  if (frame) {
+    frame.srcdoc = receiptHtml;
+  } else {
+    const win = window.open("", "_blank");
+    if (win) {
+      win.document.write(receiptHtml);
+      win.document.close();
+    }
+  }
+}
+
+$("#downloadReceiptBtn")?.addEventListener("click", () => {
+  if (currentTrackingOrderData) {
+    generatePrintableReceipt(currentTrackingOrderData);
+  }
+});
+
 function openOrderTracking(order) {
+  currentTrackingOrderData = order;
   activeTrackingOrderCode = order.order_code || `Q${order.order_id || order.id}`;
+  lastKnownOrderStatus = order.status || "new";
   closeOverlays();
 
   $("#trackingOrderCode").textContent = `#${activeTrackingOrderCode}`;
   updateTrackingStepper(order.status || "new");
+  setupNotificationButton();
 
   const items = order.items || [];
   let typeDisplay = order.order_type || "Takeaway";
@@ -760,7 +959,9 @@ function startTrackingPoll(orderRef) {
       if (res.ok) {
         const data = await res.json();
         if (data.order) {
+          currentTrackingOrderData = data.order;
           updateTrackingStepper(data.order.status);
+          checkOrderNotificationTrigger(orderRef, data.order.status);
           if (data.order.status === "completed" || data.order.status === "cancelled") {
             clearInterval(trackingPollTimer);
           }
@@ -1029,7 +1230,36 @@ document.addEventListener("click",e=>{
     document.getElementById("mobileMenuToggle")?.setAttribute("aria-expanded","false");
   }
 });
-$("#searchBtn")?.addEventListener("click",()=>{showPage("menu");setTimeout(()=>$("#menuSearch")?.focus(),400)});
+// Theme Manager (Night Cafe Noir)
+function initTheme() {
+  const saved = localStorage.getItem("qissaTheme");
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const initialTheme = saved || (prefersDark ? "dark" : "light");
+  
+  applyTheme(initialTheme);
+
+  $("#themeToggleBtn")?.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme") || "light";
+    const next = current === "dark" ? "light" : "dark";
+    applyTheme(next);
+    localStorage.setItem("qissaTheme", next);
+    showToast(next === "dark" ? "🌙 Night Mode enabled" : "☀️ Day Mode enabled");
+  });
+}
+
+function applyTheme(theme) {
+  if (theme === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+    const icon = $("#themeIcon");
+    if (icon) icon.textContent = "☀️";
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+    const icon = $("#themeIcon");
+    if (icon) icon.textContent = "🌙";
+  }
+}
+
+initTheme();
 loadStore();
 initCategoryScrollControls();
 

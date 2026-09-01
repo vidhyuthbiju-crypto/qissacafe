@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=19.0"/>
+<link rel="stylesheet" href="styles.css?v=20.0"/>
 </head>
 <body>
 <div class="grain"></div><div class="cursor-glow" id="cursorGlow"></div>
@@ -23,6 +23,7 @@
 <a href="#" data-page="home" class="active">Home</a><a href="#" data-page="menu">Menu</a><a href="#" data-page="story">Our Story</a><a href="#" data-page="visit">Visit</a>
 </div>
 <div class="nav-actions">
+  <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Night Mode" title="Toggle Night/Day Mode"><span class="theme-icon" id="themeIcon">🌙</span></button>
   <button class="ghost-btn" id="searchBtn">Search 🔍</button>
   <button class="cart-btn" id="cartBtn">Cart <span id="cartCount">0</span></button>
 </div>
@@ -346,17 +347,33 @@
       <span id="liveStatusText">Order placed — awaiting kitchen confirmation</span>
     </div>
 
+    <!-- Web Push Notification Prompt Card -->
+    <div class="notify-prompt-card" id="notifyPromptCard">
+      <div class="notify-info">
+        <span class="bell-anim">🔔</span>
+        <div>
+          <strong>Get notified when ready?</strong>
+          <p>Receive an alert even if you switch apps or lock screen.</p>
+        </div>
+      </div>
+      <button type="button" class="enable-notify-btn" id="enableNotifyBtn">Enable Alert</button>
+    </div>
+
     <!-- Order Items Summary -->
     <div class="tracking-details" id="trackingDetails"></div>
 
     <!-- Action Buttons -->
     <div class="tracking-actions">
       <a href="#" id="trackingWhatsAppBtn" target="_blank" rel="noopener" class="primary-btn whatsapp-action-btn">💬 Send Summary on WhatsApp</a>
-      <a href="tel:+919645700585" id="trackingCallBtn" class="secondary-btn call-action-btn">📞 Call Cafe</a>
-      <button class="soft-btn" id="trackingNewOrderBtn" style="padding:12px 18px;border-radius:14px;cursor:pointer;border:0;background:rgba(58,99,57,0.1);font-weight:700;color:var(--green)">+ Add More Items</button>
+      <button type="button" id="downloadReceiptBtn" class="secondary-btn receipt-action-btn">🧾 Download / Print Bill</button>
+      <div style="display:flex;gap:10px;width:100%">
+        <a href="tel:+919645700585" id="trackingCallBtn" class="soft-btn call-action-btn" style="flex:1;text-align:center;padding:12px 14px;border-radius:14px;border:1px solid rgba(58,99,57,0.2);font-weight:700">📞 Call Cafe</a>
+        <button class="soft-btn" id="trackingNewOrderBtn" style="flex:1;padding:12px 14px;border-radius:14px;cursor:pointer;border:0;background:rgba(58,99,57,0.1);font-weight:700;color:var(--green)">+ Add Items</button>
+      </div>
     </div>
   </div>
 </div>
+<iframe id="customerReceiptFrame" style="position:fixed;width:0;height:0;border:0;visibility:hidden;"></iframe>
 
 <div class="mobile-cart-bar" id="mobileCartBar" style="display:none">
   <div class="mobile-cart-summary">
@@ -372,6 +389,6 @@
   </button>
 </div>
 <div class="toast" id="toast"><span class="toast-icon" id="toastIcon">&#10003;</span><span id="toastText">Added to cart</span></div>
-<script src="app.js?v=19.0"></script>
+<script src="app.js?v=20.0"></script>
 </body>
 </html>
