@@ -1230,36 +1230,11 @@ document.addEventListener("click",e=>{
     document.getElementById("mobileMenuToggle")?.setAttribute("aria-expanded","false");
   }
 });
-// Theme Manager (Night Cafe Noir)
-function initTheme() {
-  const saved = localStorage.getItem("qissaTheme");
-  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const initialTheme = saved || (prefersDark ? "dark" : "light");
-  
-  applyTheme(initialTheme);
+try {
+  document.documentElement.removeAttribute("data-theme");
+  localStorage.removeItem("qissaTheme");
+} catch (_) {}
 
-  $("#themeToggleBtn")?.addEventListener("click", () => {
-    const current = document.documentElement.getAttribute("data-theme") || "light";
-    const next = current === "dark" ? "light" : "dark";
-    applyTheme(next);
-    localStorage.setItem("qissaTheme", next);
-    showToast(next === "dark" ? "🌙 Night Mode enabled" : "☀️ Day Mode enabled");
-  });
-}
-
-function applyTheme(theme) {
-  if (theme === "dark") {
-    document.documentElement.setAttribute("data-theme", "dark");
-    const icon = $("#themeIcon");
-    if (icon) icon.textContent = "☀️";
-  } else {
-    document.documentElement.removeAttribute("data-theme");
-    const icon = $("#themeIcon");
-    if (icon) icon.textContent = "🌙";
-  }
-}
-
-initTheme();
 loadStore();
 initCategoryScrollControls();
 
