@@ -801,56 +801,77 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   font-weight: 700;
 }
 
-/* Card 03: Qissa Resto Cafe (Deep Emerald Liquid Glass with Matching Geometry) */
+/* Card 03: Qissa Resto Cafe (The Grand Hero Highlight Card - Bigger & Glowing) */
 .story-card-qissa {
-  background: linear-gradient(145deg, rgba(22, 42, 21, 0.95) 0%, rgba(35, 66, 34, 0.92) 50%, rgba(46, 84, 44, 0.88) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  grid-column: 1 / -1; /* Spans full width of the grid on desktop! */
+  background: linear-gradient(145deg, rgba(15, 33, 14, 0.97) 0%, rgba(26, 54, 25, 0.94) 50%, rgba(38, 74, 37, 0.90) 100%);
+  border: 1.5px solid rgba(212, 169, 60, 0.45); /* High-end gold rim accent */
   color: white;
+  padding: 30px 28px 24px;
   box-shadow: 
-    0 20px 50px rgba(18, 30, 16, 0.24),
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1.5px 2px rgba(255, 255, 255, 0.45);
+    0 24px 65px rgba(14, 32, 13, 0.32),
+    0 0 35px rgba(212, 169, 60, 0.16),
+    inset 0 1.5px 2.5px rgba(255, 255, 255, 0.50);
+}
+.story-card-qissa:hover {
+  transform: translateY(-5px);
+  box-shadow: 
+    0 30px 75px rgba(14, 32, 13, 0.40),
+    0 0 45px rgba(212, 169, 60, 0.25),
+    inset 0 1.5px 3px rgba(255, 255, 255, 0.70);
 }
 .story-card-qissa .journey-chapter-tag {
   color: var(--gold-2);
-  background: rgba(212, 169, 60, 0.16);
-  border-color: rgba(212, 169, 60, 0.32);
+  background: rgba(212, 169, 60, 0.20);
+  border-color: rgba(212, 169, 60, 0.45);
+  font-weight: 900;
 }
 .story-card-qissa .journey-num {
-  color: rgba(255, 255, 255, 0.22);
+  color: rgba(212, 169, 60, 0.40);
+  font-size: 1.9rem;
 }
 .story-card-qissa .journey-title-row h3 {
+  font-size: 1.55rem;
   color: white;
 }
 .story-card-qissa .journey-subtitle {
   color: var(--gold-2);
+  font-size: 0.88rem;
 }
 .story-card-qissa .journey-text {
-  color: rgba(255, 255, 255, 0.84);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.90rem;
+  max-width: 820px;
 }
 .story-card-qissa .age-badge {
   background: rgba(212, 169, 60, 0.22);
   color: var(--gold-2);
-  border-color: rgba(212, 169, 60, 0.4);
+  border-color: rgba(212, 169, 60, 0.45);
 }
 .story-card-qissa .location-badge {
+  background: rgba(255, 255, 255, 0.16);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.30);
+}
+.story-card-qissa .tag-badge {
   background: rgba(255, 255, 255, 0.14);
   color: white;
   border-color: rgba(255, 255, 255, 0.25);
 }
-.story-card-qissa .tag-badge {
-  background: rgba(255, 255, 255, 0.12);
-  color: white;
-  border-color: rgba(255, 255, 255, 0.22);
+
+.story-card-qissa .story-logo-inline {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  border: 1.5px solid rgba(212, 169, 60, 0.6);
 }
 
-.story-logo-inline {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  object-fit: cover;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-  border: 1.5px solid rgba(255, 255, 255, 0.35);
+/* Card 04: The Craft (Bottom Guarantee Card) */
+.story-card-craft {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88) 0%, rgba(254, 246, 230, 0.52) 50%, rgba(255, 255, 255, 0.78) 100%);
 }
 
 /* Floating Food Animated Cluster - Locked to Bottom Baseline */
