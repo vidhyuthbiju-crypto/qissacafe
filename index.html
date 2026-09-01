@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=16.0"/>
+<link rel="stylesheet" href="styles.css?v=17.0"/>
 </head>
 <body>
 <div class="grain"></div><div class="cursor-glow" id="cursorGlow"></div>
@@ -40,7 +40,7 @@
 </div>
 <div class="hero-visual reveal"><div class="logo-stage"><div class="logo-halo"></div><img src="assets/qissa-logo.jpeg" alt="Qissa" class="hero-logo"/><div class="floating-chip chip-one">Freshly made</div><div class="floating-chip chip-two">Authentic taste</div></div></div>
 </div></div>
-<div class="marquee-section"><div class="marquee"><div class="marquee-track"><span>SHAWARMA</span><b>&#10022;</b><span>BROAST</span><b>&#10022;</b><span>BURGERS</span><b>&#10022;</b><span>SHAKES</span><b>&#10022;</b><span>MOJITOS</span><b>&#10022;</b><span>FALOODA</span><b>&#10022;</b><span>SHAWARMA</span><b>&#10022;</b><span>BROAST</span><b>&#10022;</b><span>BURGERS</span><b>&#10022;</b><span>SHAKES</span><b>&#10022;</b><span>MOJITOS</span><b>&#10022;</b><span>FALOODA</span><b>&#10022;</b></div></div></div>
+<div class="marquee-section"><div class="marquee"><div class="marquee-track"><span>SHAWARMA</span><b>&#10022;</b><span>LIME &amp; JUICE</span><b>&#10022;</b><span>BROAST</span><b>&#10022;</b><span>HOT DRINKS</span><b>&#10022;</b><span>BURGERS</span><b>&#10022;</b><span>SHAKES</span><b>&#10022;</b><span>MOJITOS</span><b>&#10022;</b><span>FALOODA</span><b>&#10022;</b><span>SHAWARMA</span><b>&#10022;</b><span>LIME &amp; JUICE</span><b>&#10022;</b><span>BROAST</span><b>&#10022;</b><span>HOT DRINKS</span><b>&#10022;</b><span>BURGERS</span><b>&#10022;</b><span>SHAKES</span><b>&#10022;</b><span>MOJITOS</span><b>&#10022;</b><span>FALOODA</span><b>&#10022;</b></div></div></div>
 <div class="home-cards-section">
   <div class="home-cards-orb home-cards-orb-1"></div>
   <div class="home-cards-orb home-cards-orb-2"></div>
@@ -252,11 +252,11 @@
   <div class="order-type-block">
     <span class="order-type-prompt">How would you like your order?</span>
     <div class="order-type-tabs" id="orderTypeTabs">
-      <button type="button" class="order-type-tab active" data-type="Dine-in"><span class="tab-emoji">🍽️</span> Dine In</button>
+      <button type="button" class="order-type-tab active" data-type="Delivery"><span class="tab-emoji">🛵</span> Delivery</button>
       <button type="button" class="order-type-tab" data-type="Takeaway"><span class="tab-emoji">🥡</span> Pickup</button>
-      <button type="button" class="order-type-tab" data-type="Delivery"><span class="tab-emoji">🛵</span> Delivery</button>
+      <button type="button" class="order-type-tab" data-type="Dine-in"><span class="tab-emoji">🍽️</span> Dine In</button>
     </div>
-    <input type="hidden" id="orderType" value="Dine-in"/>
+    <input type="hidden" id="orderType" value="Delivery"/>
   </div>
 
   <div class="form-fields">
@@ -266,7 +266,7 @@
     </div>
     
     <!-- Dine In Specific -->
-    <div id="dineInFields">
+    <div id="dineInFields" style="display:none">
       <div class="input-wrap" id="wrap-tableNumber">
         <label>Table Number *<input id="tableNumber" placeholder="e.g. Table 4"/></label>
         <div class="field-error-msg" id="err-tableNumber" style="display:none"></div>
@@ -274,7 +274,7 @@
     </div>
 
     <!-- Pickup & Delivery Specific -->
-    <div id="phoneFields" style="display:none">
+    <div id="phoneFields" style="display:block">
       <div class="input-wrap" id="wrap-customerPhone">
         <label>Phone Number *<input id="customerPhone" type="tel" inputmode="numeric" placeholder="10-digit mobile number" maxlength="10" autocomplete="tel"/></label>
         <div class="field-error-msg" id="err-customerPhone" style="display:none"></div>
@@ -282,7 +282,7 @@
     </div>
 
     <!-- Delivery Specific -->
-    <div id="deliveryFields" style="display:none">
+    <div id="deliveryFields" style="display:block">
       <div class="input-wrap" id="wrap-deliveryAddress">
         <label>Delivery Address *<textarea id="deliveryAddress" rows="2" placeholder="House / Flat / Building / Street address"></textarea></label>
         <div class="field-error-msg" id="err-deliveryAddress" style="display:none"></div>
@@ -372,6 +372,6 @@
   </button>
 </div>
 <div class="toast" id="toast"><span class="toast-icon" id="toastIcon">&#10003;</span><span id="toastText">Added to cart</span></div>
-<script src="app.js?v=16.0"></script>
+<script src="app.js?v=17.0"></script>
 </body>
 </html>

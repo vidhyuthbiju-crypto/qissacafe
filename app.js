@@ -11,7 +11,7 @@ const API_TIMEOUT_MS = 30000;
 const SEARCH_DEBOUNCE_MS = 300;
 const ORDER_SUBMISSION_TIMEOUT_MS = 30000;
 
-const CATEGORY_ORDER = ["Shawarma", "Broast", "Burger", "Sandwich", "Fried", "Classic Shake", "Falooda", "Mojito", "Soda", "Lemon Juice", "Hot"];
+const CATEGORY_ORDER = ["Shawarma", "Lemon Juice", "Broast", "Hot", "Burger", "Sandwich", "Fried", "Classic Shake", "Falooda", "Mojito", "Soda"];
 
 const CATEGORY_ICONS = {
   "Shawarma": "🌯", "Broast": "🍗", "Burger": "🍔", "Sandwich": "🥪",
@@ -558,7 +558,7 @@ async function openCheckout() {
   if (savedName && $("#customerName")) $("#customerName").value = savedName;
   if (savedPhone && $("#customerPhone")) $("#customerPhone").value = savedPhone;
 
-  setOrderType($("#orderType")?.value || "Dine-in");
+  setOrderType($("#orderType")?.value || "Delivery");
 
   checkoutModal.classList.add("show");
   backdrop.classList.add("show");
@@ -567,7 +567,7 @@ async function openCheckout() {
   setTimeout(() => {
     const nameInput = $("#customerName");
     if (nameInput && !nameInput.value) nameInput.focus();
-    else $("#tableNumber")?.focus();
+    else $("#customerPhone")?.focus();
   }, 120);
 }
 
