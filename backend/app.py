@@ -18,8 +18,20 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
-DB_PATH = BASE_DIR / "qissa.db"
 load_dotenv(BASE_DIR / ".env", override=True)
+
+# Persistent Storage Detection (Render Persistent Disk / Docker Volume / Custom Data Dir)
+DATA_DIR_ENV = os.getenv("PERSISTENT_DATA_DIR") or os.getenv("DATA_DIR") or os.getenv("RENDER_DISK_PATH")
+if DATA_DIR_ENV and Path(DATA_DIR_ENV).exists() and os.access(DATA_DIR_ENV, os.W_OK):
+    DATA_DIR = Path(DATA_DIR_ENV)
+elif Path("/var/data").exists() and os.access("/var/data", os.W_OK):
+    DATA_DIR = Path("/var/data")
+else:
+    DATA_DIR = BASE_DIR
+
+DB_PATH = DATA_DIR / "qissa.db"
+ORDERS_BACKUP_PATH = DATA_DIR / "orders_backup.json"
+REPO_BACKUP_PATH = BASE_DIR / "orders_backup.json"
 
 import sys
 if str(BASE_DIR) not in sys.path:
@@ -111,6 +123,138 @@ def db():
     return conn
 
 
+def backup_data_to_disk():
+    """Atomically backup all orders, order items, settings, and custom menu states to disk."""
+    try:
+        conn = db()
+        orders_rows = conn.execute("SELECT * FROM orders ORDER BY id").fetchall()
+        items_rows = conn.execute("SELECT * FROM order_items ORDER BY order_id, id").fetchall()
+        settings_rows = conn.execute("SELECT * FROM settings").fetchall()
+        menu_rows = conn.execute("SELECT * FROM menu_items ORDER BY sort_order, id").fetchall()
+        conn.close()
+
+        items_by_order = {}
+        for it in items_rows:
+            items_by_order.setdefault(it["order_id"], []).append({
+                "menu_item_id": it["menu_item_id"],
+                "item_name": it["item_name"],
+                "unit_price": it["unit_price"],
+                "qty": it["qty"],
+                "line_total": it["line_total"]
+            })
+
+        data = {
+            "version": "1.0",
+            "backed_up_at": datetime.now().isoformat(),
+            "orders": [
+                {
+                    "id": o["id"],
+                    "order_code": o["order_code"],
+                    "customer_name": o["customer_name"],
+                    "phone": o["phone"],
+                    "order_type": o["order_type"],
+                    "table_number": o["table_number"] if "table_number" in o.keys() else "",
+                    "delivery_address": o["delivery_address"] if "delivery_address" in o.keys() else "",
+                    "notes": o["notes"],
+                    "total": o["total"],
+                    "status": o["status"],
+                    "created_at": o["created_at"],
+                    "updated_at": o["updated_at"],
+                    "items": items_by_order.get(o["id"], [])
+                }
+                for o in orders_rows
+            ],
+            "settings": {s["key"]: s["value"] for s in settings_rows},
+            "custom_menu_count": len(menu_rows)
+        }
+
+        for path in [ORDERS_BACKUP_PATH, REPO_BACKUP_PATH]:
+            try:
+                temp_file = path.with_suffix(".tmp")
+                with open(temp_file, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+                temp_file.replace(path)
+            except Exception:
+                pass
+        logger.info(f"Auto-backup complete: {len(orders_rows)} orders saved to persistent storage")
+    except Exception as e:
+        logger.error(f"Error during backup_data_to_disk: {e}")
+
+
+def restore_data_from_disk(conn):
+    """Auto-restore historical orders and settings if database was restarted or rebuilt."""
+    backup_file = None
+    if ORDERS_BACKUP_PATH.exists():
+        backup_file = ORDERS_BACKUP_PATH
+    elif REPO_BACKUP_PATH.exists():
+        backup_file = REPO_BACKUP_PATH
+
+    if not backup_file:
+        return
+
+    try:
+        with open(backup_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        backup_orders = data.get("orders", [])
+        if not backup_orders:
+            return
+
+        existing_codes = {r["order_code"] for r in conn.execute("SELECT order_code FROM orders WHERE order_code IS NOT NULL").fetchall()}
+        restored_orders = 0
+
+        for o in backup_orders:
+            code = o.get("order_code")
+            if not code or code in existing_codes:
+                continue
+
+            cur = conn.execute(
+                """INSERT INTO orders(order_code,customer_name,phone,order_type,table_number,delivery_address,notes,total,status,created_at,updated_at)
+                   VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
+                (
+                    code,
+                    o.get("customer_name", "Customer"),
+                    o.get("phone", ""),
+                    o.get("order_type", "Takeaway"),
+                    o.get("table_number", ""),
+                    o.get("delivery_address", ""),
+                    o.get("notes", ""),
+                    o.get("total", 0),
+                    o.get("status", "completed"),
+                    o.get("created_at", datetime.now().isoformat()),
+                    o.get("updated_at", datetime.now().isoformat())
+                )
+            )
+            new_oid = cur.lastrowid
+            existing_codes.add(code)
+            restored_orders += 1
+
+            for it in o.get("items", []):
+                conn.execute(
+                    """INSERT INTO order_items(order_id,menu_item_id,item_name,unit_price,qty,line_total)
+                       VALUES(?,?,?,?,?,?)""",
+                    (
+                        new_oid,
+                        it.get("menu_item_id"),
+                        it.get("item_name", "Item"),
+                        it.get("unit_price", 0),
+                        it.get("qty", 1),
+                        it.get("line_total", 0)
+                    )
+                )
+
+        # Restore custom settings if not already present
+        backup_settings = data.get("settings", {})
+        for k, v in backup_settings.items():
+            conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)", (k, v))
+
+        conn.commit()
+        if restored_orders > 0:
+            logger.info(f"Auto-restored {restored_orders} historical orders from persistent backup file")
+    except Exception as e:
+        logger.error(f"Error during restore_data_from_disk: {e}")
+
+
 def init_db():
     conn = db()
     conn.executescript("""
@@ -167,7 +311,7 @@ def init_db():
         "maps_directions_url": "https://maps.app.goo.gl/5v2gcWyZ5xAjXJHV6"
     }
     for k, v in defaults.items():
-        conn.execute("INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)", (k, v))
+        conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)", (k, v))
 
     try: conn.execute("ALTER TABLE menu_items ADD COLUMN image TEXT NOT NULL DEFAULT ''")
     except Exception: pass
@@ -338,9 +482,15 @@ def init_db():
     for name, img_url in img_map.items():
         conn.execute("UPDATE menu_items SET image=? WHERE name=? AND (image IS NULL OR image='')", (img_url, name))
 
+    # Auto-restore historical orders if database was restarted/rebuilt
+    restore_data_from_disk(conn)
+
     conn.commit()
     conn.close()
-    logger.info("Database initialized successfully")
+
+    # Create persistent backup file
+    backup_data_to_disk()
+    logger.info("Database initialized successfully with persistent auto-recovery")
 
 
 def setting(conn, key, default=""):
@@ -539,6 +689,7 @@ def create_order():
             )
 
         conn.commit()
+        backup_data_to_disk()
         logger.info(f"Order {code} created: {name} - Rs.{total} - {len(verified)} items")
 
         broadcast_admin_event("new_order", {
@@ -736,6 +887,7 @@ def update_settings():
         )
 
     conn.commit()
+    backup_data_to_disk()
     broadcast_admin_event("settings_updated", {
         "cafe_open": setting(conn, "cafe_open", "1") == "1",
         "whatsapp": setting(conn, "whatsapp", "919645700585"),
@@ -784,6 +936,7 @@ def add_menu_item():
         (category, name, price, description, availability, max_sort, image, is_veg, is_bestseller)
     )
     conn.commit()
+    backup_data_to_disk()
 
     row = conn.execute("SELECT * FROM menu_items WHERE id=?", (cur.lastrowid,)).fetchone()
     out = item_json(row)
@@ -833,6 +986,7 @@ def edit_menu_item(item_id):
         (category, name, price, description, availability, image, is_veg, is_bestseller, item_id)
     )
     conn.commit()
+    backup_data_to_disk()
 
     updated = conn.execute("SELECT * FROM menu_items WHERE id=?", (item_id,)).fetchone()
     out = item_json(updated)
@@ -850,6 +1004,7 @@ def delete_menu_item(item_id):
     row = conn.execute("SELECT name FROM menu_items WHERE id=?", (item_id,)).fetchone()
     cur = conn.execute("DELETE FROM menu_items WHERE id=?", (item_id,))
     conn.commit()
+    backup_data_to_disk()
     broadcast_admin_event("menu_updated", {"action": "delete", "item_id": item_id})
     conn.close()
 
@@ -969,6 +1124,7 @@ def update_order(order_id):
         (status, order_id)
     )
     conn.commit()
+    backup_data_to_disk()
 
     if cur.rowcount == 0:
         conn.close()
@@ -981,6 +1137,68 @@ def update_order(order_id):
 
     logger.info(f"Order {row['order_code']} status updated to: {status}")
     return jsonify(order=out)
+
+
+# ---------- Admin Backup / Export / Import ----------
+@app.get("/api/admin/backup/export")
+@admin_required
+def export_backup():
+    backup_data_to_disk()
+    backup_file = ORDERS_BACKUP_PATH if ORDERS_BACKUP_PATH.exists() else REPO_BACKUP_PATH
+    if not backup_file or not backup_file.exists():
+        return jsonify(error="No backup file available"), 404
+
+    try:
+        with open(backup_file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        filename = f"qissa_orders_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        response = Response(
+            json.dumps(data, indent=2, ensure_ascii=False),
+            mimetype="application/json",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+        return response
+    except Exception as e:
+        return jsonify(error=f"Export failed: {e}"), 500
+
+
+@app.post("/api/admin/backup/import")
+@admin_required
+def import_backup():
+    data = None
+    if "file" in request.files:
+        file = request.files["file"]
+        if file.filename:
+            try:
+                data = json.load(file)
+            except Exception as e:
+                return jsonify(error=f"Invalid JSON file: {e}"), 400
+    if not data:
+        data = request.get_json(silent=True)
+
+    if not data or not isinstance(data, dict):
+        return jsonify(error="Please provide a valid JSON backup file or payload."), 400
+
+    conn = db()
+    try:
+        # Save to backup file
+        for path in [ORDERS_BACKUP_PATH, REPO_BACKUP_PATH]:
+            try:
+                temp_file = path.with_suffix(".import_tmp")
+                with open(temp_file, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+                temp_file.replace(path)
+            except Exception:
+                pass
+
+        restore_data_from_disk(conn)
+        backup_data_to_disk()
+        conn.close()
+        return jsonify(ok=True, message="Backup restored and historical orders merged successfully.")
+    except Exception as e:
+        conn.close()
+        logger.error(f"Import backup failed: {e}")
+        return jsonify(error=f"Import failed: {e}"), 500
 
 
 @app.errorhandler(404)

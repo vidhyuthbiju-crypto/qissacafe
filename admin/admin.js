@@ -221,6 +221,33 @@ $("#settingsForm").addEventListener('submit', async e => {
   }
 });
 
+const importInput = $("#importBackupFile");
+if (importInput) {
+  importInput.addEventListener("change", async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!confirm(`Restore and merge historical orders and settings from "${file.name}"?`)) {
+      importInput.value = "";
+      return;
+    }
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const res = await fetch('/api/admin/backup/import', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Restore failed');
+      toast(data.message || 'Backup restored successfully!');
+      await loadDashboard();
+      await loadOrders();
+      await loadMenu();
+    } catch (err) {
+      toast(err.message);
+    } finally {
+      importInput.value = "";
+    }
+  });
+}
+
 async function loadMenu() {
   const d = await api('/api/admin/menu');
   menuItems = d.items;

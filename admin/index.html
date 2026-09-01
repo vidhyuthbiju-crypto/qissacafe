@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/admin/admin.css?v=3.0">
+<link rel="stylesheet" href="/admin/admin.css?v=3.5">
 </head>
 <body>
 <div class="grain"></div>
@@ -88,6 +88,24 @@
         <label>Google Maps Directions Link<input id="setMapDirections" placeholder="https://maps.google.com/?q=..."></label>
         <button class="primary" type="submit">Save settings</button>
       </form>
+
+      <!-- Database & Order History Preservation Panel -->
+      <div class="panel settings-form" style="margin-top:20px">
+        <div class="panel-head"><div><span class="kicker">DATA PERSISTENCE &amp; HISTORY</span><h3>Order History &amp; Cloud Backup</h3></div></div>
+        <div style="padding:0 24px">
+          <p style="color:var(--muted);font-size:0.86rem;line-height:1.6;margin:0 0 16px">
+            All customer orders, daily sales, and settings are <strong>automatically persisted</strong> to disk on every change and auto-restored upon program updates. You can also export a copy to your computer or import past records anytime.
+          </p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <a href="/api/admin/backup/export" class="primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">💾 Download Backup (JSON)</a>
+            <label class="soft" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">
+              📥 Restore / Import Backup
+              <input type="file" id="importBackupFile" accept=".json,application/json" hidden>
+            </label>
+          </div>
+        </div>
+      </div>
+
       <div class="security-note"><b>Security</b><p>Change the admin password and secret key in <code>backend/.env</code> before putting the site online.</p></div>
     </section>
   </main>
@@ -105,4 +123,4 @@
 </label><label>Description<textarea id="itemDescription" rows="3"></textarea></label><button class="primary" type="submit">Save item</button></form></div></div>
 <div class="toast" id="adminToast"></div>
 <iframe id="receiptPrinterFrame" style="position:fixed;width:0;height:0;border:0;visibility:hidden;"></iframe>
-<script src="/admin/admin.js?v=3.0"></script></body></html>
+<script src="/admin/admin.js?v=3.5"></script></body></html>
