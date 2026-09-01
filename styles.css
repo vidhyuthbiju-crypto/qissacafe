@@ -298,10 +298,10 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   min-width: 0;
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 .category-scroll {
-  width: 100%;
-  max-width: 100%;
+  flex: 1 1 auto;
   min-width: 0; /* Prevents flex/grid child blowout */
   display: flex;
   gap: 8px;
@@ -310,7 +310,7 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x proximity;
   scroll-behavior: smooth;
-  padding: 4px 44px 8px;
+  padding: 4px 2px 8px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -320,48 +320,50 @@ h1 em, h2 em { color: var(--green-2); font-style: italic; font-weight: 500; }
   height: 0;
 }
 .cat-nav-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1.5px solid rgba(58, 99, 57, 0.24);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.90);
   color: var(--green);
-  font-size: 1.45rem;
-  font-weight: 800;
   display: grid;
   place-items: center;
   cursor: pointer;
-  z-index: 10;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: all 0.22s ease;
+  z-index: 5;
+  box-shadow: 0 4px 14px rgba(35, 42, 25, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
   user-select: none;
   padding: 0;
-  line-height: 1;
+}
+.cat-nav-arrow svg {
+  display: block;
+  stroke: var(--green);
+  transition: transform 0.2s ease, stroke 0.2s ease;
 }
 .cat-nav-arrow:hover {
   background: var(--green);
-  color: white;
   border-color: var(--green);
-  transform: translateY(-50%) scale(1.1);
-  box-shadow: 0 6px 18px rgba(58, 99, 57, 0.32);
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(58, 99, 57, 0.28);
+}
+.cat-nav-arrow:hover svg {
+  stroke: #ffffff;
 }
 .cat-nav-arrow:active {
-  transform: translateY(-50%) scale(0.95);
-}
-.cat-nav-arrow.cat-nav-left {
-  left: 0;
-}
-.cat-nav-arrow.cat-nav-right {
-  right: 0;
+  transform: scale(0.94);
 }
 .cat-nav-arrow.dimmed {
-  opacity: 0.3;
+  opacity: 0.22;
   pointer-events: none;
+  transform: scale(0.92);
+}
+@media (max-width: 680px) {
+  .cat-nav-arrow {
+    display: none !important;
+  }
 }
 .category-btn {
   flex-shrink: 0;

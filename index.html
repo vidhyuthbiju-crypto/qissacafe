@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=15.0"/>
+<link rel="stylesheet" href="styles.css?v=16.0"/>
 </head>
 <body>
 <div class="grain"></div><div class="cursor-glow" id="cursorGlow"></div>
@@ -83,9 +83,13 @@
 <div class="container menu-page-container">
   <div class="menu-toolbar" id="menuToolbar">
     <div class="category-scroll-wrap" id="categoryScrollWrap">
-      <button class="cat-nav-arrow cat-nav-left" id="catScrollLeft" aria-label="Scroll categories left">‹</button>
+      <button class="cat-nav-arrow cat-nav-left" id="catScrollLeft" aria-label="Scroll categories left">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
       <div class="category-scroll" id="categoryFilters"></div>
-      <button class="cat-nav-arrow cat-nav-right" id="catScrollRight" aria-label="Scroll categories right">›</button>
+      <button class="cat-nav-arrow cat-nav-right" id="catScrollRight" aria-label="Scroll categories right">
+        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
     </div>
     <div class="menu-search-wrap">
       <div class="menu-search"><input id="menuSearch" type="search" placeholder="🔍 Search shawarma, mojito, shake..."/></div>
@@ -368,6 +372,6 @@
   </button>
 </div>
 <div class="toast" id="toast"><span class="toast-icon" id="toastIcon">&#10003;</span><span id="toastText">Added to cart</span></div>
-<script src="app.js?v=15.0"></script>
+<script src="app.js?v=16.0"></script>
 </body>
 </html>
