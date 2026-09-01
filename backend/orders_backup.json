@@ -1,9 +1,9 @@
 {
   "version": "1.0",
-  "backed_up_at": "2026-09-01T13:11:39.189752",
+  "backed_up_at": "2026-09-01T13:21:59.322644",
   "orders": [
     {
-      "id": 87,
+      "id": 179,
       "order_code": "Q000001",
       "customer_name": "Test Customer",
       "phone": "9876543210",
@@ -26,7 +26,7 @@
       ]
     },
     {
-      "id": 88,
+      "id": 180,
       "order_code": "Q000002",
       "customer_name": "Test Customer",
       "phone": "9876543210",
@@ -49,7 +49,7 @@
       ]
     },
     {
-      "id": 89,
+      "id": 181,
       "order_code": "Q000003",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -72,7 +72,7 @@
       ]
     },
     {
-      "id": 90,
+      "id": 182,
       "order_code": "Q000004",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -95,7 +95,7 @@
       ]
     },
     {
-      "id": 91,
+      "id": 183,
       "order_code": "Q000005",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -118,7 +118,7 @@
       ]
     },
     {
-      "id": 92,
+      "id": 184,
       "order_code": "Q000006",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -141,7 +141,7 @@
       ]
     },
     {
-      "id": 93,
+      "id": 185,
       "order_code": "Q000007",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -164,7 +164,7 @@
       ]
     },
     {
-      "id": 94,
+      "id": 186,
       "order_code": "Q000008",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -187,7 +187,7 @@
       ]
     },
     {
-      "id": 95,
+      "id": 187,
       "order_code": "Q000009",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -210,7 +210,7 @@
       ]
     },
     {
-      "id": 96,
+      "id": 188,
       "order_code": "Q000010",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -233,7 +233,7 @@
       ]
     },
     {
-      "id": 97,
+      "id": 189,
       "order_code": "Q000011",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -256,7 +256,7 @@
       ]
     },
     {
-      "id": 98,
+      "id": 190,
       "order_code": "Q000012",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -279,7 +279,7 @@
       ]
     },
     {
-      "id": 99,
+      "id": 191,
       "order_code": "Q000013",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -302,7 +302,7 @@
       ]
     },
     {
-      "id": 100,
+      "id": 192,
       "order_code": "Q000014",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -325,7 +325,7 @@
       ]
     },
     {
-      "id": 101,
+      "id": 193,
       "order_code": "Q000015",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -348,7 +348,7 @@
       ]
     },
     {
-      "id": 102,
+      "id": 194,
       "order_code": "Q000016",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -371,7 +371,7 @@
       ]
     },
     {
-      "id": 103,
+      "id": 195,
       "order_code": "Q000017",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -394,7 +394,7 @@
       ]
     },
     {
-      "id": 104,
+      "id": 196,
       "order_code": "Q000018",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -417,7 +417,7 @@
       ]
     },
     {
-      "id": 105,
+      "id": 197,
       "order_code": "Q000019",
       "customer_name": "Test Workflow",
       "phone": "9876543210",
@@ -440,7 +440,7 @@
       ]
     },
     {
-      "id": 106,
+      "id": 198,
       "order_code": "Q000020",
       "customer_name": "4535645",
       "phone": "9778321070",
@@ -463,7 +463,7 @@
       ]
     },
     {
-      "id": 107,
+      "id": 199,
       "order_code": "Q000021",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -486,7 +486,7 @@
       ]
     },
     {
-      "id": 108,
+      "id": 200,
       "order_code": "Q000022",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -509,7 +509,7 @@
       ]
     },
     {
-      "id": 109,
+      "id": 201,
       "order_code": "Q000023",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -532,7 +532,7 @@
       ]
     },
     {
-      "id": 110,
+      "id": 202,
       "order_code": "Q000024",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -555,7 +555,7 @@
       ]
     },
     {
-      "id": 111,
+      "id": 203,
       "order_code": "Q000025",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -578,7 +578,7 @@
       ]
     },
     {
-      "id": 112,
+      "id": 204,
       "order_code": "Q000026",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -601,7 +601,7 @@
       ]
     },
     {
-      "id": 113,
+      "id": 205,
       "order_code": "Q000027",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -624,7 +624,7 @@
       ]
     },
     {
-      "id": 114,
+      "id": 206,
       "order_code": "Q000028",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -647,7 +647,7 @@
       ]
     },
     {
-      "id": 115,
+      "id": 207,
       "order_code": "Q000029",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -670,7 +670,7 @@
       ]
     },
     {
-      "id": 116,
+      "id": 208,
       "order_code": "Q000030",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -693,7 +693,7 @@
       ]
     },
     {
-      "id": 117,
+      "id": 209,
       "order_code": "Q000031",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -716,7 +716,7 @@
       ]
     },
     {
-      "id": 118,
+      "id": 210,
       "order_code": "Q000032",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -739,7 +739,7 @@
       ]
     },
     {
-      "id": 119,
+      "id": 211,
       "order_code": "Q000033",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -762,7 +762,7 @@
       ]
     },
     {
-      "id": 120,
+      "id": 212,
       "order_code": "Q000034",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -785,7 +785,7 @@
       ]
     },
     {
-      "id": 121,
+      "id": 213,
       "order_code": "Q000035",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -808,7 +808,7 @@
       ]
     },
     {
-      "id": 122,
+      "id": 214,
       "order_code": "Q000036",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -831,7 +831,7 @@
       ]
     },
     {
-      "id": 123,
+      "id": 215,
       "order_code": "Q000037",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -854,7 +854,7 @@
       ]
     },
     {
-      "id": 124,
+      "id": 216,
       "order_code": "Q000038",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -877,7 +877,7 @@
       ]
     },
     {
-      "id": 125,
+      "id": 217,
       "order_code": "Q000039",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -900,7 +900,7 @@
       ]
     },
     {
-      "id": 126,
+      "id": 218,
       "order_code": "Q000040",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -923,7 +923,7 @@
       ]
     },
     {
-      "id": 127,
+      "id": 219,
       "order_code": "Q000041",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -946,7 +946,7 @@
       ]
     },
     {
-      "id": 128,
+      "id": 220,
       "order_code": "Q000042",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -969,7 +969,7 @@
       ]
     },
     {
-      "id": 129,
+      "id": 221,
       "order_code": "Q000043",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -992,7 +992,7 @@
       ]
     },
     {
-      "id": 130,
+      "id": 222,
       "order_code": "Q000044",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1015,7 +1015,7 @@
       ]
     },
     {
-      "id": 131,
+      "id": 223,
       "order_code": "Q000045",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1038,7 +1038,7 @@
       ]
     },
     {
-      "id": 132,
+      "id": 224,
       "order_code": "Q000046",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1061,7 +1061,7 @@
       ]
     },
     {
-      "id": 133,
+      "id": 225,
       "order_code": "Q000047",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1084,7 +1084,7 @@
       ]
     },
     {
-      "id": 134,
+      "id": 226,
       "order_code": "Q000048",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1107,7 +1107,7 @@
       ]
     },
     {
-      "id": 135,
+      "id": 227,
       "order_code": "Q000049",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1130,7 +1130,7 @@
       ]
     },
     {
-      "id": 136,
+      "id": 228,
       "order_code": "Q000050",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1153,7 +1153,7 @@
       ]
     },
     {
-      "id": 137,
+      "id": 229,
       "order_code": "Q000051",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1176,7 +1176,7 @@
       ]
     },
     {
-      "id": 138,
+      "id": 230,
       "order_code": "Q000052",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1199,7 +1199,7 @@
       ]
     },
     {
-      "id": 139,
+      "id": 231,
       "order_code": "Q000053",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1222,7 +1222,7 @@
       ]
     },
     {
-      "id": 140,
+      "id": 232,
       "order_code": "Q000054",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1245,7 +1245,7 @@
       ]
     },
     {
-      "id": 141,
+      "id": 233,
       "order_code": "Q000055",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1268,7 +1268,7 @@
       ]
     },
     {
-      "id": 142,
+      "id": 234,
       "order_code": "Q000056",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1291,7 +1291,7 @@
       ]
     },
     {
-      "id": 143,
+      "id": 235,
       "order_code": "Q000057",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1314,7 +1314,7 @@
       ]
     },
     {
-      "id": 144,
+      "id": 236,
       "order_code": "Q000058",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1337,7 +1337,7 @@
       ]
     },
     {
-      "id": 145,
+      "id": 237,
       "order_code": "Q000059",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1360,7 +1360,7 @@
       ]
     },
     {
-      "id": 146,
+      "id": 238,
       "order_code": "Q000060",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1383,7 +1383,7 @@
       ]
     },
     {
-      "id": 147,
+      "id": 239,
       "order_code": "Q000061",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1406,7 +1406,7 @@
       ]
     },
     {
-      "id": 148,
+      "id": 240,
       "order_code": "Q000062",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1429,7 +1429,7 @@
       ]
     },
     {
-      "id": 149,
+      "id": 241,
       "order_code": "Q000063",
       "customer_name": "Yesterday Test",
       "phone": "9876543210",
@@ -1444,7 +1444,7 @@
       "items": []
     },
     {
-      "id": 150,
+      "id": 242,
       "order_code": "Q000064",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1467,7 +1467,7 @@
       ]
     },
     {
-      "id": 151,
+      "id": 243,
       "order_code": "Q000065",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1490,7 +1490,7 @@
       ]
     },
     {
-      "id": 152,
+      "id": 244,
       "order_code": "Q000066",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1513,7 +1513,7 @@
       ]
     },
     {
-      "id": 153,
+      "id": 245,
       "order_code": "Q000067",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1536,7 +1536,7 @@
       ]
     },
     {
-      "id": 154,
+      "id": 246,
       "order_code": "Q000068",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1559,7 +1559,7 @@
       ]
     },
     {
-      "id": 155,
+      "id": 247,
       "order_code": "Q000069",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1582,7 +1582,7 @@
       ]
     },
     {
-      "id": 156,
+      "id": 248,
       "order_code": "Q000070",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1605,7 +1605,7 @@
       ]
     },
     {
-      "id": 157,
+      "id": 249,
       "order_code": "Q000071",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1628,7 +1628,7 @@
       ]
     },
     {
-      "id": 158,
+      "id": 250,
       "order_code": "Q000072",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1651,7 +1651,7 @@
       ]
     },
     {
-      "id": 159,
+      "id": 251,
       "order_code": "Q000073",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1674,7 +1674,7 @@
       ]
     },
     {
-      "id": 160,
+      "id": 252,
       "order_code": "Q000074",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1697,7 +1697,7 @@
       ]
     },
     {
-      "id": 161,
+      "id": 253,
       "order_code": "Q000075",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1720,7 +1720,7 @@
       ]
     },
     {
-      "id": 162,
+      "id": 254,
       "order_code": "Q000076",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1743,7 +1743,7 @@
       ]
     },
     {
-      "id": 163,
+      "id": 255,
       "order_code": "Q000077",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1766,7 +1766,7 @@
       ]
     },
     {
-      "id": 164,
+      "id": 256,
       "order_code": "Q000078",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1789,7 +1789,7 @@
       ]
     },
     {
-      "id": 165,
+      "id": 257,
       "order_code": "Q000079",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1812,7 +1812,7 @@
       ]
     },
     {
-      "id": 166,
+      "id": 258,
       "order_code": "Q000080",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1835,7 +1835,7 @@
       ]
     },
     {
-      "id": 167,
+      "id": 259,
       "order_code": "Q000081",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1858,7 +1858,7 @@
       ]
     },
     {
-      "id": 168,
+      "id": 260,
       "order_code": "Q000082",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1881,7 +1881,7 @@
       ]
     },
     {
-      "id": 169,
+      "id": 261,
       "order_code": "Q000083",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1904,7 +1904,7 @@
       ]
     },
     {
-      "id": 170,
+      "id": 262,
       "order_code": "Q000084",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1927,7 +1927,7 @@
       ]
     },
     {
-      "id": 171,
+      "id": 263,
       "order_code": "Q000085",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -1950,7 +1950,7 @@
       ]
     },
     {
-      "id": 172,
+      "id": 264,
       "order_code": "Q000086",
       "customer_name": "Test Preservation Customer",
       "phone": "9876543210",
@@ -1973,7 +1973,7 @@
       ]
     },
     {
-      "id": 173,
+      "id": 265,
       "order_code": "Q000173",
       "customer_name": "Alice Dine-in",
       "phone": "9876543210",
@@ -1996,7 +1996,7 @@
       ]
     },
     {
-      "id": 174,
+      "id": 266,
       "order_code": "Q000174",
       "customer_name": "Bob Delivery",
       "phone": "9876543211",
@@ -2015,6 +2015,98 @@
           "unit_price": 110,
           "qty": 1,
           "line_total": 110
+        }
+      ]
+    },
+    {
+      "id": 267,
+      "order_code": "Q000175",
+      "customer_name": "Alice Dine-in",
+      "phone": "9876543210",
+      "order_type": "Dine-in",
+      "table_number": "Table 7",
+      "delivery_address": "",
+      "notes": "Extra mayo",
+      "total": 180,
+      "status": "new",
+      "created_at": "2026-09-01T13:21:33",
+      "updated_at": "2026-09-01T13:21:33",
+      "items": [
+        {
+          "menu_item_id": 1,
+          "item_name": "Shawarma Roll",
+          "unit_price": 90,
+          "qty": 2,
+          "line_total": 180
+        }
+      ]
+    },
+    {
+      "id": 268,
+      "order_code": "Q000176",
+      "customer_name": "Bob Delivery",
+      "phone": "9876543211",
+      "order_type": "Delivery",
+      "table_number": "",
+      "delivery_address": "Beach Road, Villa #42, Calicut",
+      "notes": "Call on arrival",
+      "total": 110,
+      "status": "new",
+      "created_at": "2026-09-01T13:21:33",
+      "updated_at": "2026-09-01T13:21:33",
+      "items": [
+        {
+          "menu_item_id": 2,
+          "item_name": "Shawarma Plate",
+          "unit_price": 110,
+          "qty": 1,
+          "line_total": 110
+        }
+      ]
+    },
+    {
+      "id": 269,
+      "order_code": "Q000177",
+      "customer_name": "Test Preservation Customer",
+      "phone": "9876543210",
+      "order_type": "Takeaway",
+      "table_number": "",
+      "delivery_address": "",
+      "notes": "Testing order persistence across server restarts",
+      "total": 180,
+      "status": "new",
+      "created_at": "2026-09-01T13:21:42",
+      "updated_at": "2026-09-01T13:21:42",
+      "items": [
+        {
+          "menu_item_id": 1,
+          "item_name": "Shawarma Roll",
+          "unit_price": 90,
+          "qty": 2,
+          "line_total": 180
+        }
+      ]
+    },
+    {
+      "id": 270,
+      "order_code": "Q000178",
+      "customer_name": "Test Preservation Customer",
+      "phone": "9876543210",
+      "order_type": "Takeaway",
+      "table_number": "",
+      "delivery_address": "",
+      "notes": "Testing order persistence across server restarts",
+      "total": 180,
+      "status": "new",
+      "created_at": "2026-09-01T13:21:58",
+      "updated_at": "2026-09-01T13:21:58",
+      "items": [
+        {
+          "menu_item_id": 1,
+          "item_name": "Shawarma Roll",
+          "unit_price": 90,
+          "qty": 2,
+          "line_total": 180
         }
       ]
     }

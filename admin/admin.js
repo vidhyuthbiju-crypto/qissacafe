@@ -2,7 +2,7 @@ const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAl
 let menuItems = [], orders = [];
 let autoRefreshInterval = null;
 let eventSource = null;
-const AUTO_REFRESH_SECONDS = 3;
+const AUTO_REFRESH_SECONDS = 15;
 let lastKnownMaxOrderId = 0;
 
 async function api(url, options = {}) {
@@ -282,7 +282,14 @@ function openItem(item = null) {
   $("#itemImage").value = item?.image || '';
   $("#itemDescription").value = item?.description || '';
   $("#itemImageFile").value=""; setPreview(item?.image||"");
-  setTimeout(() => $("#itemName").focus(), 100);
+
+  const submitBtn = $("#itemForm")?.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = item ? "Save changes" : "Save item";
+  }
+
+  setTimeout(() => $("#itemName").focus(), 80);
 }
 $("#itemImage").addEventListener("input",e=>setPreview(e.target.value.trim()));
 $("#itemImageFile").addEventListener("change",async e=>{
@@ -303,13 +310,17 @@ window.deleteItem = async id => {
   const item = menuItems.find(x => x.id === id);
   if (!confirm(`Delete ${item?.name || 'this item'}? This action cannot be undone.`)) return;
 
+  // Optimistic delete
+  menuItems = menuItems.filter(x => x.id !== id);
+  renderMenuAdmin();
+  toast('Item deleted');
+
   try {
     await api(`/api/admin/menu/${id}`, { method: 'DELETE' });
-    toast('Item deleted');
-    await loadMenu();
-    await loadDashboard();
+    loadDashboard();
   } catch (err) {
     toast(err.message);
+    await loadMenu();
   }
 };
 
@@ -327,22 +338,37 @@ $("#itemForm").addEventListener('submit', async e => {
   };
 
   const submitBtn = e.target.querySelector('button[type="submit"]');
-  const originalText = submitBtn.textContent;
-  submitBtn.disabled = true;
-  submitBtn.textContent = id ? "Updating..." : "Adding...";
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Saving...";
+  }
+
+  // Instant UI feedback: close modal and update local list immediately
+  $("#itemModal").classList.remove('show');
+  toast(id ? 'Item updated' : 'Item added');
+
+  if (id) {
+    const idx = menuItems.findIndex(x => x.id == id);
+    if (idx !== -1) {
+      menuItems[idx] = { ...menuItems[idx], ...payload };
+      renderMenuAdmin();
+    }
+  }
 
   try {
     if (id) await api(`/api/admin/menu/${id}`, { method: 'PATCH', body: JSON.stringify(payload) });
     else await api('/api/admin/menu', { method: 'POST', body: JSON.stringify(payload) });
 
-    $("#itemModal").classList.remove('show');
-    toast(id ? 'Item updated' : 'Item added');
     await loadMenu();
-    await loadDashboard();
+    loadDashboard();
   } catch (err) {
     toast(err.message);
-    submitBtn.disabled = false;
-    submitBtn.textContent = originalText;
+    await loadMenu();
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = id ? "Save changes" : "Save item";
+    }
   }
 });
 

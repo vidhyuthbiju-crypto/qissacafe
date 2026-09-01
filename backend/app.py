@@ -117,68 +117,81 @@ AVAILABILITY_STATES = {"available", "low", "sold_out"}
 
 
 def db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=20.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA synchronous = NORMAL")
+    conn.execute("PRAGMA busy_timeout = 5000")
     return conn
 
 
+_backup_lock = threading.Lock()
+
+def _run_backup_worker():
+    with _backup_lock:
+        try:
+            conn = db()
+            orders_rows = conn.execute("SELECT * FROM orders ORDER BY id").fetchall()
+            items_rows = conn.execute("SELECT * FROM order_items ORDER BY order_id, id").fetchall()
+            settings_rows = conn.execute("SELECT * FROM settings").fetchall()
+            menu_rows = conn.execute("SELECT * FROM menu_items ORDER BY sort_order, id").fetchall()
+            conn.close()
+
+            items_by_order = {}
+            for it in items_rows:
+                items_by_order.setdefault(it["order_id"], []).append({
+                    "menu_item_id": it["menu_item_id"],
+                    "item_name": it["item_name"],
+                    "unit_price": it["unit_price"],
+                    "qty": it["qty"],
+                    "line_total": it["line_total"]
+                })
+
+            data = {
+                "version": "1.0",
+                "backed_up_at": datetime.now().isoformat(),
+                "orders": [
+                    {
+                        "id": o["id"],
+                        "order_code": o["order_code"],
+                        "customer_name": o["customer_name"],
+                        "phone": o["phone"],
+                        "order_type": o["order_type"],
+                        "table_number": o["table_number"] if "table_number" in o.keys() else "",
+                        "delivery_address": o["delivery_address"] if "delivery_address" in o.keys() else "",
+                        "notes": o["notes"],
+                        "total": o["total"],
+                        "status": o["status"],
+                        "created_at": o["created_at"],
+                        "updated_at": o["updated_at"],
+                        "items": items_by_order.get(o["id"], [])
+                    }
+                    for o in orders_rows
+                ],
+                "settings": {s["key"]: s["value"] for s in settings_rows},
+                "custom_menu_count": len(menu_rows)
+            }
+
+            for path in [ORDERS_BACKUP_PATH, REPO_BACKUP_PATH]:
+                try:
+                    temp_file = path.with_suffix(".tmp")
+                    with open(temp_file, "w", encoding="utf-8") as f:
+                        json.dump(data, f, indent=2, ensure_ascii=False)
+                    temp_file.replace(path)
+                except Exception:
+                    pass
+            logger.info(f"Async backup complete: {len(orders_rows)} orders persisted to storage")
+        except Exception as e:
+            logger.error(f"Error during async backup: {e}")
+
+def schedule_background_backup():
+    """Trigger non-blocking asynchronous backup on a worker thread so API responds instantly."""
+    t = threading.Thread(target=_run_backup_worker, daemon=True)
+    t.start()
+
 def backup_data_to_disk():
-    """Atomically backup all orders, order items, settings, and custom menu states to disk."""
-    try:
-        conn = db()
-        orders_rows = conn.execute("SELECT * FROM orders ORDER BY id").fetchall()
-        items_rows = conn.execute("SELECT * FROM order_items ORDER BY order_id, id").fetchall()
-        settings_rows = conn.execute("SELECT * FROM settings").fetchall()
-        menu_rows = conn.execute("SELECT * FROM menu_items ORDER BY sort_order, id").fetchall()
-        conn.close()
-
-        items_by_order = {}
-        for it in items_rows:
-            items_by_order.setdefault(it["order_id"], []).append({
-                "menu_item_id": it["menu_item_id"],
-                "item_name": it["item_name"],
-                "unit_price": it["unit_price"],
-                "qty": it["qty"],
-                "line_total": it["line_total"]
-            })
-
-        data = {
-            "version": "1.0",
-            "backed_up_at": datetime.now().isoformat(),
-            "orders": [
-                {
-                    "id": o["id"],
-                    "order_code": o["order_code"],
-                    "customer_name": o["customer_name"],
-                    "phone": o["phone"],
-                    "order_type": o["order_type"],
-                    "table_number": o["table_number"] if "table_number" in o.keys() else "",
-                    "delivery_address": o["delivery_address"] if "delivery_address" in o.keys() else "",
-                    "notes": o["notes"],
-                    "total": o["total"],
-                    "status": o["status"],
-                    "created_at": o["created_at"],
-                    "updated_at": o["updated_at"],
-                    "items": items_by_order.get(o["id"], [])
-                }
-                for o in orders_rows
-            ],
-            "settings": {s["key"]: s["value"] for s in settings_rows},
-            "custom_menu_count": len(menu_rows)
-        }
-
-        for path in [ORDERS_BACKUP_PATH, REPO_BACKUP_PATH]:
-            try:
-                temp_file = path.with_suffix(".tmp")
-                with open(temp_file, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False)
-                temp_file.replace(path)
-            except Exception:
-                pass
-        logger.info(f"Auto-backup complete: {len(orders_rows)} orders saved to persistent storage")
-    except Exception as e:
-        logger.error(f"Error during backup_data_to_disk: {e}")
+    schedule_background_backup()
 
 
 def restore_data_from_disk(conn):
