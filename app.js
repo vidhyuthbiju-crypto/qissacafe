@@ -18,155 +18,6 @@ const CATEGORY_ICONS = {
   "Fried": "🍟", "Classic Shake": "🥤", "Falooda": "🍨", "Mojito": "🍹",
   "Soda": "🧃", "Lemon Juice": "🍋", "Hot": "☕"
 };
-
-const CUSTOMIZATION_CONFIG = {
-  "Shawarma": {
-    groups: [
-      {
-        id: "spice",
-        title: "Spice Level",
-        subtitle: "Choose 1",
-        type: "radio",
-        options: [
-          { label: "Normal Spicy", price: 0, default: true },
-          { label: "Extra Spicy", price: 0 }
-        ]
-      },
-      {
-        id: "addons",
-        title: "Add-ons",
-        subtitle: "Optional",
-        type: "checkbox",
-        options: [
-          { label: "Extra Mayo", price: 15 },
-          { label: "Extra Rumali", price: 10 },
-          { label: "Add Cheese", price: 20 }
-        ]
-      }
-    ]
-  },
-  "Broast": {
-    groups: [
-      {
-        id: "dip",
-        title: "Choice of Dip",
-        subtitle: "Choose 1",
-        type: "radio",
-        options: [
-          { label: "Garlic Mayo", price: 0, default: true },
-          { label: "Spicy Dip", price: 0 }
-        ]
-      },
-      {
-        id: "addons",
-        title: "Extra Dips",
-        subtitle: "Optional",
-        type: "checkbox",
-        options: [
-          { label: "Extra Dip", price: 15 }
-        ]
-      }
-    ]
-  },
-  "Classic Shake": {
-    groups: [
-      {
-        id: "sugar",
-        title: "Sweetness",
-        subtitle: "Choose 1",
-        type: "radio",
-        options: [
-          { label: "Normal Sugar", price: 0, default: true },
-          { label: "Less Sugar", price: 0 },
-          { label: "No Sugar", price: 0 }
-        ]
-      }
-    ]
-  },
-  "Falooda": {
-    groups: [
-      {
-        id: "sugar",
-        title: "Sweetness",
-        subtitle: "Choose 1",
-        type: "radio",
-        options: [
-          { label: "Normal Sugar", price: 0, default: true },
-          { label: "Less Sugar", price: 0 }
-        ]
-      }
-    ]
-  },
-  "Mojito": {
-    groups: [
-      {
-        id: "sugar",
-        title: "Sweetness",
-        subtitle: "Choose 1",
-        type: "radio",
-        options: [
-          { label: "Normal Sweetness", price: 0, default: true },
-          { label: "Less Sweet", price: 0 }
-        ]
-      },
-      {
-        id: "ice",
-        title: "Ice Level",
-        subtitle: "Choose 1",
-        type: "radio",
-        options: [
-          { label: "Normal Ice", price: 0, default: true },
-          { label: "No Ice", price: 0 }
-        ]
-      }
-    ]
-  },
-  "Lemon Juice": {
-    groups: [
-      {
-        id: "sugar",
-        title: "Sweetness",
-        subtitle: "Choose 1",
-        type: "radio",
-        options: [
-          { label: "Normal Sugar", price: 0, default: true },
-          { label: "Less Sugar", price: 0 },
-          { label: "No Sugar", price: 0 }
-        ]
-      },
-      {
-        id: "ice",
-        title: "Ice Level",
-        subtitle: "Choose 1",
-        type: "radio",
-        options: [
-          { label: "Normal Ice", price: 0, default: true },
-          { label: "No Ice", price: 0 }
-        ]
-      }
-    ]
-  },
-  "Hot": {
-    groups: [
-      {
-        id: "sugar",
-        title: "Sugar Preference",
-        subtitle: "Choose 1",
-        type: "radio",
-        options: [
-          { label: "Normal Sugar", price: 0, default: true },
-          { label: "Less Sugar", price: 0 },
-          { label: "No Sugar", price: 0 }
-        ]
-      }
-    ]
-  }
-};
-
-function isItemCustomizable(item) {
-  return Boolean(item && item.category && CUSTOMIZATION_CONFIG[item.category]);
-}
-
 let menu = [];
 const state = {
   category: "All",
@@ -413,218 +264,15 @@ function availabilityMeta(item) {
   return { label: "", cls: "", showBadge: false, disabled: false };
 }
 
-let currentCustomItem = null;
-let currentCustomSelections = { radio: {}, checkbox: {} };
-let currentCustomQty = 1;
-
-function openCustomizationModal(item) {
-  currentCustomItem = item;
-  currentCustomQty = 1;
-  const config = CUSTOMIZATION_CONFIG[item.category] || { groups: [] };
-
-  currentCustomSelections = {
-    radio: {},
-    checkbox: {}
-  };
-
-  config.groups.forEach(g => {
-    if (g.type === "radio") {
-      const def = g.options.find(o => o.default) || g.options[0];
-      if (def) currentCustomSelections.radio[g.id] = def;
-    } else if (g.type === "checkbox") {
-      currentCustomSelections.checkbox[g.id] = [];
-    }
-  });
-
-  if ($("#customItemCategory")) $("#customItemCategory").textContent = (item.category || "CUSTOMIZE").toUpperCase();
-  if ($("#customItemTitle")) $("#customItemTitle").textContent = item.name;
-  if ($("#customItemDesc")) $("#customItemDesc").textContent = item.description || `Base price: ₹${item.price}`;
-  if ($("#customQtyNum")) $("#customQtyNum").textContent = "1";
-
-  renderCustomizationOptions();
-  updateCustomizationTotal();
-
-  $("#customModal")?.classList.add("show");
-  backdrop?.classList.add("show");
-  document.body.classList.add("no-scroll");
-}
-
-function closeCustomModal() {
-  $("#customModal")?.classList.remove("show");
-  if (!$("#cartDrawer")?.classList.contains("open") && !$("#checkoutModal")?.classList.contains("show") && !$("#orderTrackingModal")?.classList.contains("show")) {
-    backdrop?.classList.remove("show");
-    document.body.classList.remove("no-scroll");
-  }
-}
-
-function renderCustomizationOptions() {
-  const container = $("#customOptionsContainer");
-  if (!container || !currentCustomItem) return;
-  const config = CUSTOMIZATION_CONFIG[currentCustomItem.category];
-  if (!config || !config.groups.length) {
-    container.innerHTML = `<p style="color:var(--muted);font-size:0.85rem">No extra options required for this item.</p>`;
-    return;
-  }
-
-  container.innerHTML = config.groups.map(g => {
-    if (g.type === "radio") {
-      const selected = currentCustomSelections.radio[g.id];
-      return `
-        <div class="custom-group">
-          <div class="custom-group-head">
-            <h4 class="custom-group-title">${escapeHtml(g.title)}</h4>
-            <span class="custom-group-subtitle">${escapeHtml(g.subtitle)}</span>
-          </div>
-          <div class="custom-pill-list">
-            ${g.options.map(opt => `
-              <button type="button" class="custom-pill-btn ${selected && selected.label === opt.label ? 'active' : ''}" onclick="selectCustomRadio('${g.id}', '${escapeHtml(opt.label)}')">
-                ${escapeHtml(opt.label)} ${opt.price > 0 ? `(+₹${opt.price})` : ''}
-              </button>
-            `).join("")}
-          </div>
-        </div>
-      `;
-    } else if (g.type === "checkbox") {
-      const selectedArr = currentCustomSelections.checkbox[g.id] || [];
-      return `
-        <div class="custom-group">
-          <div class="custom-group-head">
-            <h4 class="custom-group-title">${escapeHtml(g.title)}</h4>
-            <span class="custom-group-subtitle">${escapeHtml(g.subtitle)}</span>
-          </div>
-          <div>
-            ${g.options.map(opt => {
-              const isChecked = selectedArr.some(o => o.label === opt.label);
-              return `
-                <div class="custom-check-item ${isChecked ? 'checked' : ''}" onclick="toggleCustomCheckbox('${g.id}', '${escapeHtml(opt.label)}')">
-                  <div class="custom-check-left">
-                    <div class="custom-checkbox-box">${isChecked ? '✓' : ''}</div>
-                    <span>${escapeHtml(opt.label)}</span>
-                  </div>
-                  <span class="custom-addon-price">+₹${opt.price}</span>
-                </div>
-              `;
-            }).join("")}
-          </div>
-        </div>
-      `;
-    }
-    return '';
-  }).join("");
-}
-
-window.selectCustomRadio = function(groupId, optLabel) {
-  if (!currentCustomItem) return;
-  const config = CUSTOMIZATION_CONFIG[currentCustomItem.category];
-  const group = config?.groups.find(g => g.id === groupId);
-  const opt = group?.options.find(o => o.label === optLabel);
-  if (opt) {
-    currentCustomSelections.radio[groupId] = opt;
-    renderCustomizationOptions();
-    updateCustomizationTotal();
-  }
-};
-
-window.toggleCustomCheckbox = function(groupId, optLabel) {
-  if (!currentCustomItem) return;
-  const config = CUSTOMIZATION_CONFIG[currentCustomItem.category];
-  const group = config?.groups.find(g => g.id === groupId);
-  const opt = group?.options.find(o => o.label === optLabel);
-  if (!opt) return;
-
-  if (!currentCustomSelections.checkbox[groupId]) {
-    currentCustomSelections.checkbox[groupId] = [];
-  }
-  const arr = currentCustomSelections.checkbox[groupId];
-  const idx = arr.findIndex(o => o.label === optLabel);
-  if (idx >= 0) {
-    arr.splice(idx, 1);
-  } else {
-    arr.push(opt);
-  }
-  renderCustomizationOptions();
-  updateCustomizationTotal();
-};
-
-function calculateCustomUnit() {
-  if (!currentCustomItem) return { basePrice: 0, addonPrice: 0, unitPrice: 0 };
-  let addonTotal = 0;
-  Object.values(currentCustomSelections.radio).forEach(opt => {
-    if (opt && opt.price) addonTotal += opt.price;
-  });
-  Object.values(currentCustomSelections.checkbox).forEach(arr => {
-    (arr || []).forEach(opt => {
-      if (opt && opt.price) addonTotal += opt.price;
-    });
-  });
-  return {
-    basePrice: currentCustomItem.price,
-    addonPrice: addonTotal,
-    unitPrice: currentCustomItem.price + addonTotal
-  };
-}
-
-function updateCustomizationTotal() {
-  const { unitPrice } = calculateCustomUnit();
-  const grandTotal = unitPrice * currentCustomQty;
-  if ($("#customBtnTotal")) $("#customBtnTotal").textContent = `₹${grandTotal}`;
-}
-
-function addCustomizedItemToCart() {
-  if (!currentCustomItem) return;
-  const { basePrice, addonPrice, unitPrice } = calculateCustomUnit();
-
-  const parts = [];
-  Object.values(currentCustomSelections.radio).forEach(opt => {
-    if (opt) parts.push(opt.label);
-  });
-  Object.values(currentCustomSelections.checkbox).forEach(arr => {
-    (arr || []).forEach(opt => {
-      parts.push(`${opt.label} (+₹${opt.price})`);
-    });
-  });
-
-  const customText = parts.join(", ");
-  const customKey = `${currentCustomItem.id}|${customText}`;
-
-  const existing = state.cart.find(x => x.key === customKey);
-  if (existing) {
-    existing.qty += currentCustomQty;
-  } else {
-    state.cart.push({
-      id: currentCustomItem.id,
-      key: customKey,
-      name: currentCustomItem.name,
-      basePrice: basePrice,
-      addonPrice: addonPrice,
-      price: unitPrice,
-      customization: customText,
-      qty: currentCustomQty
-    });
-  }
-
-  saveCart();
-  syncCardUI(currentCustomItem.id);
-  renderCart();
-  closeCustomModal();
-  showToast(`${currentCustomItem.name} added to cart`);
-}
-
-function renderActionBtn(item, inCartQty, disabled) {
-  const isCustomizable = isItemCustomizable(item);
-  if (inCartQty > 0 && !disabled) {
-    if (isCustomizable) {
-      return `<button type="button" class="add-btn menu-add-btn customized-active" data-id="${item.id}" onclick="addToCart(${item.id}, event)" style="width:auto;padding:0 14px;font-size:0.8rem;border-radius:12px">${inCartQty} in cart +</button>`;
-    }
+function renderActionBtn(item, inCart, disabled) {
+  if (inCart && inCart.qty > 0 && !disabled) {
     return `<div class="card-qty-ctrl">
-              <button type="button" class="qty-btn dec-btn" onclick="changeQtyById(${item.id}, -1, event)" aria-label="Decrease quantity">−</button>
-              <span class="card-qty-num">${inCartQty}</span>
-              <button type="button" class="qty-btn inc-btn" onclick="changeQtyById(${item.id}, 1, event)" aria-label="Increase quantity">+</button>
+              <button type="button" class="qty-btn dec-btn" onclick="changeQty(${item.id}, -1, event)" aria-label="Decrease quantity">−</button>
+              <span class="card-qty-num">${inCart.qty}</span>
+              <button type="button" class="qty-btn inc-btn" onclick="changeQty(${item.id}, 1, event)" aria-label="Increase quantity">+</button>
             </div>`;
   }
-  const label = isCustomizable ? "Customize +" : "+";
-  const extraStyle = isCustomizable ? 'style="width:auto;padding:0 12px;font-size:0.82rem;border-radius:12px"' : '';
-  return `<button type="button" class="add-btn menu-add-btn" ${extraStyle} data-id="${item.id}" onclick="addToCart(${item.id}, event)" ${disabled ? "disabled" : ""} aria-label="Add ${escapeHtml(item.name)} to cart">${disabled ? "Sold" : label}</button>`;
+  return `<button type="button" class="add-btn menu-add-btn" data-id="${item.id}" onclick="addToCart(${item.id}, event)" ${disabled ? "disabled" : ""} aria-label="Add ${escapeHtml(item.name)} to cart">${disabled ? "Sold" : "+"}</button>`;
 }
 
 function syncCardUI(id) {
@@ -632,11 +280,10 @@ function syncCardUI(id) {
   if (!item) return;
   const a = availabilityMeta(item);
   const disabled = a.disabled || !state.cafeOpen;
-  const inCartItems = state.cart.filter(x => x.id === item.id);
-  const inCartQty = inCartItems.reduce((sum, x) => sum + x.qty, 0);
+  const inCart = state.cart.find(x => x.id === item.id);
   const slots = document.querySelectorAll(`.card-action-slot[data-id="${id}"]`);
   slots.forEach(slot => {
-    slot.innerHTML = renderActionBtn(item, inCartQty, disabled);
+    slot.innerHTML = renderActionBtn(item, inCart, disabled);
   });
 }
 
@@ -672,9 +319,8 @@ function renderMenu() {
   menuGrid.innerHTML = items.map((item, i) => {
     const a = availabilityMeta(item);
     const disabled = a.disabled || !state.cafeOpen;
-    const inCartItems = state.cart.filter(x => x.id === item.id);
-    const inCartQty = inCartItems.reduce((sum, x) => sum + x.qty, 0);
-    const actionBtn = renderActionBtn(item, inCartQty, disabled);
+    const inCart = state.cart.find(x => x.id === item.id);
+    const actionBtn = renderActionBtn(item, inCart, disabled);
 
     const isPopular = Boolean(item.is_bestseller);
     const isCombo = item.category === "Combos & Deals";
@@ -682,15 +328,13 @@ function renderMenu() {
       ? `<span class="availability ${a.cls}">${a.label}</span>`
       : (isCombo ? `<span class="combo-badge-chip">🔥 Value Combo</span>` : (isPopular && state.category !== "🔥 Popular" ? `<span class="bestseller-chip">★ Popular</span>` : (!state.cafeOpen ? `<span class="availability sold">Closed</span>` : '')));
 
-    const customHint = isItemCustomizable(item) ? `<span class="custom-badge-hint">Customisable</span>` : '';
-
     return `
       <article class="menu-card card-in ${a.disabled ? "soldout" : ""} ${a.cls === "low" ? "low-stock" : ""}" data-id="${item.id}" style="animation-delay:${reduceMotion ? 0 : (i % 8) * 25}ms">
         <div class="menu-card-top-content">
           ${item.image ? `<img class="menu-thumb" src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.style.display='none'">` : `<div class="icon-wrap"><span class="menu-icon">${CATEGORY_ICONS[item.category]||"🍽️"}</span></div>`}
           <div class="menu-card-header">
             ${badgeHtml}
-            <span class="item-category">${escapeHtml(item.category)}${customHint}</span>
+            <span class="item-category">${escapeHtml(item.category)}</span>
           </div>
           <h3>${escapeHtml(item.name)}</h3>
           ${item.description ? `<p class="menu-desc">${escapeHtml(item.description)}</p>` : ''}
@@ -713,16 +357,11 @@ function addToCart(id, event) {
   const item = menu.find(x => x.id === id);
   if (!item || !state.cafeOpen || item.availability === "sold_out") return;
 
-  if (isItemCustomizable(item)) {
-    openCustomizationModal(item);
-    return;
-  }
-
-  const existing = state.cart.find(x => x.id === id && !x.customization);
+  const existing = state.cart.find(x => x.id === id);
   if (existing) {
     existing.qty += 1;
   } else {
-    state.cart.push({ id: item.id, key: String(item.id), name: item.name, price: item.price, basePrice: item.price, addonPrice: 0, qty: 1 });
+    state.cart.push({ id: item.id, name: item.name, price: item.price, qty: 1 });
   }
   saveCart();
 
@@ -740,47 +379,32 @@ function addToCart(id, event) {
   }
 }
 
-function changeCartKeyQty(key, delta, event) {
+function changeQty(id, delta, event) {
   if (event) {
     event.preventDefault();
     event.stopPropagation();
   }
-  const item = state.cart.find(x => String(x.key || x.id) === String(key));
+  const item = state.cart.find(x => x.id === id);
   if (!item) return;
 
   item.qty += delta;
   if (item.qty <= 0) {
-    state.cart = state.cart.filter(x => String(x.key || x.id) !== String(key));
+    state.cart = state.cart.filter(x => x.id !== id);
   }
   saveCart();
-  syncCardUI(item.id);
+  syncCardUI(id);
   renderCart();
 }
 
-function removeCartKeyItem(key, event) {
+function removeItem(id, event) {
   if (event) {
     event.preventDefault();
     event.stopPropagation();
   }
-  const item = state.cart.find(x => String(x.key || x.id) === String(key));
-  const itemId = item ? item.id : null;
-  state.cart = state.cart.filter(x => String(x.key || x.id) !== String(key));
+  state.cart = state.cart.filter(x => x.id !== id);
   saveCart();
-  if (itemId) syncCardUI(itemId);
+  syncCardUI(id);
   renderCart();
-}
-
-function changeQtyById(id, delta, event) {
-  const item = state.cart.find(x => x.id === id);
-  if (item) changeCartKeyQty(item.key || item.id, delta, event);
-}
-
-function changeQty(id, delta, event) {
-  changeCartKeyQty(id, delta, event);
-}
-
-function removeItem(id, event) {
-  removeCartKeyItem(id, event);
 }
 
 function cartTotal() { return state.cart.reduce((sum, x) => sum + x.price * x.qty, 0); }
@@ -835,23 +459,17 @@ function renderCartItems() {
     itemsContainer.innerHTML = `<div class="cart-empty"><div><span class="empty-icon">🛒</span><h3>Your cart is empty</h3><p>Add something delicious from the menu.</p></div></div>`;
     return;
   }
-  itemsContainer.innerHTML = state.cart.map((item, i) => {
-    const itemKey = escapeHtml(item.key || item.id);
-    return `
+  itemsContainer.innerHTML = state.cart.map((item, i) => `
     <div class="cart-line" style="animation-delay:${reduceMotion ? 0 : i * 35}ms">
-      <div>
-        <h4>${escapeHtml(item.name)}</h4>
-        <small>${money(item.price)} each</small>
-        ${item.customization ? `<div class="cart-item-custom-notes">${escapeHtml(item.customization)}</div>` : ''}
+      <div><h4>${escapeHtml(item.name)}</h4><small>${money(item.price)} each</small>
         <div class="qty" role="group" aria-label="Quantity controls">
-          <button type="button" onclick="changeCartKeyQty('${itemKey}', -1, event)" aria-label="Decrease quantity">−</button>
+          <button type="button" onclick="changeQty(${item.id}, -1, event)" aria-label="Decrease quantity">−</button>
           <strong aria-live="polite">${item.qty}</strong>
-          <button type="button" onclick="changeCartKeyQty('${itemKey}', 1, event)" aria-label="Increase quantity">+</button>
+          <button type="button" onclick="changeQty(${item.id}, 1, event)" aria-label="Increase quantity">+</button>
         </div>
-        <button type="button" class="remove-btn" onclick="removeCartKeyItem('${itemKey}', event)" aria-label="Remove ${escapeHtml(item.name)}">Remove</button>
+        <button type="button" class="remove-btn" onclick="removeItem(${item.id}, event)" aria-label="Remove ${escapeHtml(item.name)}">Remove</button>
       </div><strong>${money(item.price * item.qty)}</strong>
-    </div>`;
-  }).join("");
+    </div>`).join("");
 }
 
 function renderCart() {
@@ -873,7 +491,6 @@ function openCart() {
 }
 
 function closeOverlays() {
-  closeCustomModal();
   cartDrawer.classList.remove("open");
   checkoutModal.classList.remove("show");
   if ($("#orderTrackingModal")) $("#orderTrackingModal").classList.remove("show");
@@ -957,10 +574,7 @@ function renderCheckoutSummary() {
   checkoutSummary.innerHTML = `
     ${state.cart.map(item => `
       <div class="row">
-        <div>
-          <span>${escapeHtml(item.name)} × ${item.qty}</span>
-          ${item.customization ? `<div style="font-size:0.74rem;color:var(--muted);margin-top:2px">${escapeHtml(item.customization)}</div>` : ''}
-        </div>
+        <span>${escapeHtml(item.name)} × ${item.qty}</span>
         <strong>${money(item.price * item.qty)}</strong>
       </div>
     `).join("")}
@@ -1004,25 +618,6 @@ $("#closeCheckout").addEventListener("click", closeOverlays);
 $("#checkoutBtn").addEventListener("click", openCheckout);
 backdrop.addEventListener("click", closeOverlays);
 $("#menuSearch").addEventListener("input", e => debouncedSearch(e.target.value));
-
-// Customization Modal listeners
-$("#closeCustomModal")?.addEventListener("click", closeCustomModal);
-$("#customDecQty")?.addEventListener("click", () => {
-  if (currentCustomQty > 1) {
-    currentCustomQty -= 1;
-    if ($("#customQtyNum")) $("#customQtyNum").textContent = currentCustomQty;
-    updateCustomizationTotal();
-  }
-});
-$("#customIncQty")?.addEventListener("click", () => {
-  if (currentCustomQty < 50) {
-    currentCustomQty += 1;
-    if ($("#customQtyNum")) $("#customQtyNum").textContent = currentCustomQty;
-    updateCustomizationTotal();
-  }
-});
-$("#customAddToCartBtn")?.addEventListener("click", addCustomizedItemToCart);
-
 
 // Order Type Tabs switching
 function setOrderType(type) {
@@ -1497,9 +1092,7 @@ $("#checkoutForm").addEventListener("submit", async (e) => {
         items: state.cart.map(x => ({
           id: x.id,
           qty: x.qty,
-          price: x.price,
-          customization: x.customization || "",
-          addon_price: x.addonPrice || 0
+          price: x.price
         }))
       }),
       timeout: ORDER_SUBMISSION_TIMEOUT_MS
