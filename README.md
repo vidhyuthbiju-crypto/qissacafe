@@ -66,11 +66,8 @@ FLASK_DEBUG=1
 PORT=5000
 ```
 
-For a quick local test, if you do not create `.env`, the temporary default admin password is:
-
-`qissa2026`
-
-**Change this before publishing the website.**
+Admin login stays disabled until `QISSA_ADMIN_PASSWORD` is explicitly set in
+`backend/.env`. Never publish the site with an example or default password.
 
 ## 5. Start Qissa Cafe
 

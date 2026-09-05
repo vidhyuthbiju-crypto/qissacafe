@@ -4,7 +4,9 @@ import json
 import logging
 import os
 import queue
+import secrets
 import sqlite3
+import sys
 import threading
 from datetime import datetime
 from functools import wraps
@@ -20,6 +22,11 @@ BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
 load_dotenv(BASE_DIR / ".env", override=True)
 
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
+import supabase_client
+
 # Persistent Storage Detection (Render Persistent Disk / Docker Volume / Custom Data Dir)
 DATA_DIR_ENV = os.getenv("PERSISTENT_DATA_DIR") or os.getenv("DATA_DIR") or os.getenv("RENDER_DISK_PATH")
 if DATA_DIR_ENV and Path(DATA_DIR_ENV).exists() and os.access(DATA_DIR_ENV, os.W_OK):
@@ -32,10 +39,6 @@ else:
 DB_PATH = DATA_DIR / "qissa.db"
 ORDERS_BACKUP_PATH = DATA_DIR / "orders_backup.json"
 REPO_BACKUP_PATH = BASE_DIR / "orders_backup.json"
-
-import sys
-if str(BASE_DIR) not in sys.path:
-    sys.path.insert(0, str(BASE_DIR))
 
 try:
     from seed_data import SEED_MENU
@@ -58,7 +61,7 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("qissa")
 
 app = Flask(__name__, static_folder=None)
 secret = os.getenv("QISSA_SECRET_KEY")
@@ -71,7 +74,7 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 def get_admin_password() -> str:
     load_dotenv(BASE_DIR / ".env", override=True)
-    return os.getenv("QISSA_ADMIN_PASSWORD", "qissa2026").strip()
+    return os.getenv("QISSA_ADMIN_PASSWORD", "").strip()
 
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
@@ -129,6 +132,8 @@ def db():
 _backup_lock = threading.Lock()
 
 def _run_backup_worker():
+    if supabase_client.is_supabase_configured():
+        return
     with _backup_lock:
         try:
             conn = db()
@@ -201,7 +206,8 @@ def _run_backup_worker():
             logger.error(f"Error during async backup: {e}")
 
 def schedule_background_backup():
-    """Trigger non-blocking asynchronous backup on a worker thread so API responds instantly."""
+    if supabase_client.is_supabase_configured():
+        return
     t = threading.Thread(target=_run_backup_worker, daemon=True)
     t.start()
 
@@ -227,7 +233,6 @@ def restore_data_from_disk(conn):
         with open(backup_file, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        # Restore/sync menu items (including is_bestseller, price, availability, image, is_veg)
         backup_menu = data.get("menu_items", [])
         if backup_menu:
             restored_menu_items = 0
@@ -308,7 +313,6 @@ def restore_data_from_disk(conn):
             if restored_orders > 0:
                 logger.info(f"Auto-restored {restored_orders} historical orders from persistent backup file")
 
-        # Restore custom settings if not already present
         backup_settings = data.get("settings", {})
         for k, v in backup_settings.items():
             conn.execute("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)", (k, v))
@@ -319,6 +323,25 @@ def restore_data_from_disk(conn):
 
 
 def init_db():
+    if supabase_client.is_supabase_configured():
+        logger.info("Supabase is configured. Initializing cloud connection...")
+        try:
+            client = supabase_client.get_client()
+            if client is not None:
+                logger.info("Supabase connection verified.")
+                combos_items = [
+                    {"category": "Combos & Deals", "name": "Qissa Duo (Shawarma + Mojito)", "price": 175, "description": "Loaded Rumali Shawarma Plate paired with chilled Mint Mojito. Save ₹15!", "image": "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80", "is_bestseller": True, "is_veg": False, "availability": "available", "sort_order": 0},
+                    {"category": "Combos & Deals", "name": "Broast Family Bucket", "price": 680, "description": "10 Pcs crispy chicken broast + fries + kuboos + 2 dips & 2 classic shakes. Save ₹60!", "image": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80", "is_bestseller": True, "is_veg": False, "availability": "available", "sort_order": 1},
+                    {"category": "Combos & Deals", "name": "Chai & Snack Break", "price": 60, "description": "2 steaming hot Kadak Chais from our Chaywala heritage + fresh crispy snack plate.", "image": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80", "is_bestseller": True, "is_veg": True, "availability": "available", "sort_order": 2}
+                ]
+                for combo in combos_items:
+                    chk = client.table("menu_items").select("id").eq("name", combo["name"]).execute()
+                    if not chk.data:
+                        client.table("menu_items").insert(combo).execute()
+                return
+        except Exception as e:
+            logger.warning(f"Supabase connection check failed: {e}. Falling back to SQLite.")
+
     conn = db()
     conn.executescript("""
     CREATE TABLE IF NOT EXISTS settings (
@@ -387,7 +410,6 @@ def init_db():
     try: conn.execute("ALTER TABLE orders ADD COLUMN delivery_address TEXT NOT NULL DEFAULT ''")
     except Exception: pass
 
-    # Seed veg / bestseller defaults ONLY ONCE on initial setup if not already seeded
     if setting(conn, "bestseller_seeded", "") != "1":
         veg_categories = {"Classic Shake", "Falooda", "Mojito", "Soda", "Lemon Juice", "Hot"}
         for cat in veg_categories:
@@ -407,7 +429,6 @@ def init_db():
                  item["description"], item["availability"], i)
             )
 
-    # One-time August 2026 menu revision
     revision = setting(conn, "menu_revision", "")
     if revision != "2026-08-31-v2":
         logger.info("Applying menu revision 2026-08-31-v2")
@@ -465,12 +486,35 @@ def init_db():
                     (name, price, description, "available", max_sort)
                 )
 
+        combos_items = [
+            ("Qissa Duo (Shawarma + Mojito)", 175, "Loaded Rumali Shawarma Plate paired with chilled Mint Mojito. Save ₹15!", "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80", 1, 0),
+            ("Broast Family Bucket", 680, "10 Pcs crispy chicken broast + fries + kuboos + 2 dips & 2 classic shakes. Save ₹60!", "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80", 1, 0),
+            ("Chai & Snack Break", 60, "2 steaming hot Kadak Chais from our Chaywala heritage + fresh crispy snack plate.", "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80", 1, 1),
+        ]
+        for idx, (name, price, description, img_url, is_bestseller, is_veg) in enumerate(combos_items):
+            row = conn.execute(
+                "SELECT id FROM menu_items WHERE category='Combos & Deals' AND name=?",
+                (name,)
+            ).fetchone()
+            if row:
+                conn.execute(
+                    "UPDATE menu_items SET price=?, description=?, image=?, is_bestseller=?, is_veg=?, updated_at=CURRENT_TIMESTAMP WHERE id=?",
+                    (price, description, img_url, is_bestseller, is_veg, row["id"])
+                )
+            else:
+                conn.execute(
+                    "INSERT INTO menu_items(category,name,price,description,availability,sort_order,image,is_bestseller,is_veg) VALUES('Combos & Deals',?,?,?,?,?,?,?,?)",
+                    (name, price, description, "available", idx, img_url, is_bestseller, is_veg)
+                )
+
         conn.execute(
-            "INSERT INTO settings(key,value) VALUES('menu_revision','2026-08-31-v2') ON CONFLICT(key) DO UPDATE SET value=excluded.value"
+            "INSERT INTO settings(key,value) VALUES('menu_revision','2026-08-31-v3') ON CONFLICT(key) DO UPDATE SET value=excluded.value"
         )
 
-    # Seed images for any items missing images
     img_map = {
+        "Qissa Duo (Shawarma + Mojito)": "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80",
+        "Broast Family Bucket": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=600&q=80",
+        "Chai & Snack Break": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80",
         "Shawarma Roll": "https://images.unsplash.com/photo-1561651823-34feb02250e4?auto=format&fit=crop&w=600&q=80",
         "Shawarma Plate": "https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=600&q=80",
         "Full Meat Plate": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
@@ -548,15 +592,12 @@ def init_db():
     for name, img_url in img_map.items():
         conn.execute("UPDATE menu_items SET image=? WHERE name=? AND (image IS NULL OR image='')", (img_url, name))
 
-    # Auto-restore historical orders if database was restarted/rebuilt
     restore_data_from_disk(conn)
-
     conn.commit()
     conn.close()
 
-    # Create persistent backup file
     backup_data_to_disk(sync=True)
-    logger.info("Database initialized successfully with persistent auto-recovery")
+    logger.info("Local SQLite database initialized successfully.")
 
 
 def setting(conn, key, default=""):
@@ -620,18 +661,29 @@ def admin_page():
 @app.post("/api/admin/upload")
 @admin_required
 def admin_upload():
-    import base64, uuid
+    import uuid
     if "file" not in request.files:
         return jsonify(error="No file"), 400
     f = request.files["file"]
     if not f.filename or f.filename.split(".")[-1].lower() not in {"jpg","jpeg","png","webp"}:
         return jsonify(error="Only jpg/png/webp allowed"), 400
-    ext = f.filename.rsplit(".",1)[-1].lower()
+
+    # 1. If Supabase configured, upload directly to Supabase Storage 'menu-images' bucket
+    if supabase_client.is_supabase_configured():
+        file_bytes = f.read()
+        public_url = supabase_client.upload_menu_image(file_bytes, f.filename, f.content_type)
+        if public_url:
+            return jsonify(url=public_url)
+
+    # 2. Local disk fallback
+    ext = f.filename.rsplit(".", 1)[-1].lower()
     name = f"{uuid.uuid4().hex}.{ext}"
     dest = PROJECT_DIR / "assets" / "menu"
     dest.mkdir(parents=True, exist_ok=True)
+    f.seek(0)
     f.save(dest / name)
     return jsonify(url=f"/assets/menu/{name}")
+
 
 @app.get("/admin/<path:filename>")
 def admin_static(filename):
@@ -642,6 +694,24 @@ def admin_static(filename):
 @app.get("/api/status")
 @limiter.limit("60 per minute")
 def public_status():
+    if supabase_client.is_supabase_configured():
+        try:
+            settings_dict = supabase_client.get_settings()
+            if settings_dict:
+                data = {
+                    "cafe_open": settings_dict.get("cafe_open", True),
+                    "settings": {
+                        "whatsapp": settings_dict.get("whatsapp", "919645700585"),
+                        "address": settings_dict.get("address", "Qissa Resto Cafe, Nilambur Road, Kerala"),
+                        "opening_hours": settings_dict.get("opening_hours", "12:00 PM – 11:30 PM"),
+                        "map_embed_url": settings_dict.get("map_embed_url", "https://maps.google.com/maps?q=11.1116412,76.2789462&t=&z=16&ie=UTF8&iwloc=&output=embed"),
+                        "maps_directions_url": settings_dict.get("maps_directions_url", "https://maps.app.goo.gl/5v2gcWyZ5xAjXJHV6")
+                    }
+                }
+                return jsonify(data)
+        except Exception as e:
+            logger.error(f"Supabase get_settings error: {e}. Falling back to SQLite.")
+
     conn = db()
     data = {
         "cafe_open": setting(conn, "cafe_open", "1") == "1",
@@ -660,6 +730,15 @@ def public_status():
 @app.get("/api/menu")
 @limiter.limit("60 per minute")
 def public_menu():
+    if supabase_client.is_supabase_configured():
+        try:
+            items = supabase_client.get_menu()
+            if items and len(items) > 0:
+                return jsonify(items=items)
+            logger.warning("Supabase returned empty menu; falling back to SQLite.")
+        except Exception as e:
+            logger.error(f"Supabase get_menu error: {e}. Falling back to SQLite.")
+
     conn = db()
     rows = conn.execute("SELECT * FROM menu_items ORDER BY sort_order, id").fetchall()
     conn.close()
@@ -701,6 +780,103 @@ def create_order():
         logger.warning(f"Order with too many items from {get_remote_address()}")
         return jsonify(error=f"Maximum {MAX_ORDER_ITEMS} items per order."), 400
 
+    # 1. Supabase Order Creation (with automatic SQLite fallback on failure)
+    if supabase_client.is_supabase_configured():
+        try:
+            cafe_open_val = supabase_client.get_setting("cafe_open", "1")
+            if cafe_open_val != "1":
+                return jsonify(error="Qissa Cafe is currently closed for orders."), 409
+
+            # Fetch menu to verify items
+            menu_list = supabase_client.get_menu()
+            if menu_list and len(menu_list) > 0:
+                menu_items = {it["id"]: it for it in menu_list}
+                verified = []
+                total = 0
+
+                for entry in requested:
+                    try:
+                        item_id = int(entry.get("id"))
+                        qty = int(entry.get("qty"))
+                    except (TypeError, ValueError):
+                        return jsonify(error="Invalid cart item."), 400
+
+                    if qty < 1 or qty > MAX_ITEM_QUANTITY:
+                        return jsonify(error=f"Invalid item quantity. Max {MAX_ITEM_QUANTITY} per item."), 400
+
+                    row = menu_items.get(item_id)
+                    if not row:
+                        return jsonify(error="A menu item no longer exists. Refresh your cart."), 409
+
+                    if row["availability"] == "sold_out":
+                        return jsonify(error=f'{row["name"]} is now sold out.'), 409
+
+                    customization = str(entry.get("customization") or "").strip()[:150]
+                    try:
+                        addon_price = int(entry.get("addon_price") or 0)
+                    except (TypeError, ValueError):
+                        addon_price = 0
+                    if addon_price < 0 or addon_price > 100:
+                        addon_price = 0
+
+                    unit_price = row["price"] + addon_price
+                    display_name = f"{row['name']} ({customization})" if customization else row["name"]
+                    line = unit_price * qty
+                    total += line
+                    verified.append({
+                        "id": row["id"],
+                        "name": display_name,
+                        "price": unit_price,
+                        "qty": qty,
+                        "line_total": line,
+                        "customization": customization,
+                        "addon_price": addon_price
+                    })
+
+                order_data = {
+                    "customer_name": name,
+                    "phone": phone,
+                    "order_type": order_type,
+                    "table_number": table_number,
+                    "delivery_address": delivery_address,
+                    "notes": notes,
+                    "total": total
+                }
+
+                created = supabase_client.create_order(order_data, verified)
+                if created:
+                    broadcast_admin_event("new_order", {
+                        "order_id": created["id"],
+                        "order_code": created["order_code"],
+                        "customer_name": name,
+                        "phone": phone,
+                        "order_type": order_type,
+                        "table_number": table_number,
+                        "delivery_address": delivery_address,
+                        "total": total,
+                        "notes": notes,
+                        "items": verified,
+                        "created_at": created["created_at"]
+                    })
+
+                    return jsonify(
+                        order_id=created["id"],
+                        order_code=created["order_code"],
+                        customer_name=name,
+                        phone=phone,
+                        order_type=order_type,
+                        table_number=table_number,
+                        delivery_address=delivery_address,
+                        total=total,
+                        items=verified,
+                        status="new"
+                    ), 201
+                else:
+                    logger.warning("Supabase order creation returned None; falling back to SQLite.")
+        except Exception as e:
+            logger.error(f"Supabase order creation error: {e}; falling back to SQLite.")
+
+    # 2. Local SQLite fallback
     conn = db()
     try:
         if setting(conn, "cafe_open", "1") != "1":
@@ -729,14 +905,26 @@ def create_order():
                 logger.info(f"Order attempt for sold out item: {row['name']}")
                 return jsonify(error=f'{row["name"]} is now sold out.'), 409
 
-            line = row["price"] * qty
+            customization = str(entry.get("customization") or "").strip()[:150]
+            try:
+                addon_price = int(entry.get("addon_price") or 0)
+            except (TypeError, ValueError):
+                addon_price = 0
+            if addon_price < 0 or addon_price > 100:
+                addon_price = 0
+
+            unit_price = row["price"] + addon_price
+            display_name = f"{row['name']} ({customization})" if customization else row["name"]
+            line = unit_price * qty
             total += line
             verified.append({
                 "id": row["id"],
-                "name": row["name"],
-                "price": row["price"],
+                "name": display_name,
+                "price": unit_price,
                 "qty": qty,
-                "line_total": line
+                "line_total": line,
+                "customization": customization,
+                "addon_price": addon_price
             })
 
         now = datetime.now().isoformat(timespec="seconds")
@@ -798,6 +986,18 @@ def create_order():
 @app.get("/api/orders/<string:order_ref>")
 @limiter.limit("120 per minute")
 def get_public_order(order_ref):
+    if supabase_client.is_supabase_configured():
+        try:
+            order = supabase_client.get_order_by_ref(order_ref)
+            if order:
+                return jsonify(order={
+                    "order_code": order.get("order_code"),
+                    "status": order.get("status", "new"),
+                    "updated_at": order.get("updated_at"),
+                })
+        except Exception as e:
+            logger.error(f"Supabase get_order_by_ref error: {e}. Falling back to SQLite.")
+
     conn = db()
     try:
         clean_ref = str(order_ref).strip()
@@ -807,7 +1007,11 @@ def get_public_order(order_ref):
             row = conn.execute("SELECT * FROM orders WHERE UPPER(order_code)=?", (clean_ref.upper(),)).fetchone()
         if not row:
             return jsonify(error="Order not found"), 404
-        return jsonify(order=order_json(conn, row))
+        return jsonify(order={
+            "order_code": row["order_code"],
+            "status": row["status"],
+            "updated_at": row["updated_at"],
+        })
     finally:
         conn.close()
 
@@ -822,7 +1026,7 @@ def check_admin_password(input_password: str) -> bool:
     if not input_password:
         return False
     expected = get_admin_password()
-    return input_password == expected or input_password == "qissa2026"
+    return bool(expected) and secrets.compare_digest(input_password, expected)
 
 
 @app.post("/api/admin/login")
@@ -830,6 +1034,10 @@ def check_admin_password(input_password: str) -> bool:
 def admin_login():
     data = request.get_json(silent=True) or {}
     password = str(data.get("password", "")).strip()
+
+    if not get_admin_password():
+        logger.error("Admin login is disabled because QISSA_ADMIN_PASSWORD is not configured")
+        return jsonify(error="Admin login is not configured."), 503
 
     if not password or not check_admin_password(password):
         logger.warning(f"Failed admin login attempt from {get_remote_address()}")
@@ -859,7 +1067,6 @@ def admin_events():
         admin_subscribers.add(q)
 
     def stream():
-        # Send initial connection confirmation
         yield f"data: {json.dumps({'type': 'connected', 'timestamp': datetime.now().isoformat()})}\n\n"
         try:
             while True:
@@ -867,7 +1074,6 @@ def admin_events():
                     msg = q.get(timeout=20)
                     yield msg
                 except queue.Empty:
-                    # Heartbeat to keep connection alive through reverse proxies
                     yield ": keepalive\n\n"
         except GeneratorExit:
             pass
@@ -886,6 +1092,14 @@ def admin_events():
 @app.get("/api/admin/dashboard")
 @admin_required
 def dashboard():
+    if supabase_client.is_supabase_configured():
+        try:
+            stats = supabase_client.get_dashboard_stats()
+            if stats:
+                return jsonify(stats)
+        except Exception as e:
+            logger.error(f"Supabase dashboard error: {e}. Falling back to SQLite.")
+
     conn = db()
     today = datetime.now().date().isoformat()
 
@@ -926,6 +1140,14 @@ def dashboard():
 @app.get("/api/admin/settings")
 @admin_required
 def get_settings():
+    if supabase_client.is_supabase_configured():
+        try:
+            s = supabase_client.get_settings()
+            if s:
+                return jsonify(s)
+        except Exception as e:
+            logger.error(f"Supabase get_settings error: {e}. Falling back to SQLite.")
+
     conn = db()
     keys = ["cafe_open", "whatsapp", "address", "opening_hours", "map_embed_url", "maps_directions_url"]
     data = {k: setting(conn, k, "") for k in keys}
@@ -939,11 +1161,16 @@ def get_settings():
 def update_settings():
     data = request.get_json(silent=True) or {}
     allowed = {"cafe_open", "whatsapp", "address", "opening_hours", "map_embed_url", "maps_directions_url"}
-    conn = db()
+    cleaned_data = {k: v for k, v in data.items() if k in allowed}
 
-    for k, v in data.items():
-        if k not in allowed:
-            continue
+    if supabase_client.is_supabase_configured():
+        supabase_client.update_settings(cleaned_data)
+        updated_settings = supabase_client.get_settings()
+        broadcast_admin_event("settings_updated", updated_settings)
+        return jsonify(ok=True)
+
+    conn = db()
+    for k, v in cleaned_data.items():
         if k == "cafe_open":
             v = "1" if bool(v) else "0"
             logger.info(f"Cafe status changed to: {'OPEN' if v == '1' else 'CLOSED'}")
@@ -997,6 +1224,18 @@ def add_menu_item():
     if not name or not category or price < 0 or availability not in AVAILABILITY_STATES:
         return jsonify(error="Invalid menu item"), 400
 
+    if supabase_client.is_supabase_configured():
+        out = supabase_client.add_menu_item({
+            "name": name, "category": category, "price": price,
+            "description": description, "availability": availability,
+            "image": image, "is_veg": is_veg, "is_bestseller": is_bestseller
+        })
+        if not out:
+            return jsonify(error="Failed to add item to Supabase"), 500
+        broadcast_admin_event("menu_updated", {"action": "add", "item": out})
+        logger.info(f"Supabase menu item added: {name} - Rs.{price}")
+        return jsonify(item=out), 201
+
     conn = db()
     max_sort = conn.execute("SELECT COALESCE(MAX(sort_order),0)+1 n FROM menu_items").fetchone()["n"]
     cur = conn.execute(
@@ -1020,6 +1259,15 @@ def add_menu_item():
 @admin_required
 def edit_menu_item(item_id):
     data = request.get_json(silent=True) or {}
+
+    if supabase_client.is_supabase_configured():
+        out = supabase_client.update_menu_item(item_id, data)
+        if not out:
+            return jsonify(error="Menu item not found or update failed"), 404
+        broadcast_admin_event("menu_updated", {"action": "edit", "item": out})
+        logger.info(f"Supabase menu item updated: {out['name']} - Rs.{out['price']}")
+        return jsonify(item=out)
+
     conn = db()
     row = conn.execute("SELECT * FROM menu_items WHERE id=?", (item_id,)).fetchone()
 
@@ -1075,6 +1323,14 @@ def edit_menu_item(item_id):
 @app.post("/api/admin/menu/<int:item_id>/toggle-bestseller")
 @admin_required
 def toggle_bestseller(item_id):
+    if supabase_client.is_supabase_configured():
+        res = supabase_client.toggle_bestseller(item_id)
+        if not res:
+            return jsonify(error="Menu item not found"), 404
+        item, new_best = res
+        broadcast_admin_event("menu_updated", {"action": "edit", "item": item})
+        return jsonify(item=item, is_bestseller=new_best)
+
     conn = db()
     row = conn.execute("SELECT * FROM menu_items WHERE id=?", (item_id,)).fetchone()
     if not row:
@@ -1103,6 +1359,13 @@ def toggle_bestseller(item_id):
 @app.delete("/api/admin/menu/<int:item_id>")
 @admin_required
 def delete_menu_item(item_id):
+    if supabase_client.is_supabase_configured():
+        ok = supabase_client.delete_menu_item(item_id)
+        if not ok:
+            return jsonify(error="Menu item not found"), 404
+        broadcast_admin_event("menu_updated", {"action": "delete", "item_id": item_id})
+        return jsonify(ok=True)
+
     conn = db()
     row = conn.execute("SELECT name FROM menu_items WHERE id=?", (item_id,)).fetchone()
     cur = conn.execute("DELETE FROM menu_items WHERE id=?", (item_id,))
@@ -1142,13 +1405,21 @@ def order_json(conn, row, include_items=True):
 def admin_orders():
     status = request.args.get("status", "").strip()
     date_filter = request.args.get("date", "today").strip()
-    
+
+    if supabase_client.is_supabase_configured():
+        try:
+            orders_data, stats = supabase_client.get_orders(date_filter=date_filter, status=status)
+            if orders_data is not None:
+                return jsonify(orders=orders_data, stats=stats, date_filter=date_filter)
+        except Exception as e:
+            logger.error(f"Supabase admin_orders error: {e}. Falling back to SQLite.")
+
     conn = db()
     today_str = datetime.now().date().isoformat()
-    
+
     where_clauses = []
     params = []
-    
+
     if date_filter == "today":
         where_clauses.append("substr(created_at, 1, 10) = ?")
         params.append(today_str)
@@ -1165,10 +1436,10 @@ def admin_orders():
     elif date_filter != "all" and len(date_filter) == 10 and date_filter.count("-") == 2:
         where_clauses.append("substr(created_at, 1, 10) = ?")
         params.append(date_filter)
-    
+
     date_where_sql = f"WHERE {where_clauses[0]}" if (where_clauses and "substr(created_at" in where_clauses[0]) else ""
     date_params = [params[0]] if (where_clauses and "substr(created_at" in where_clauses[0]) else []
-    
+
     stats_query = f"""
         SELECT COUNT(*) total_orders,
                COALESCE(SUM(total), 0) total_revenue,
@@ -1184,16 +1455,16 @@ def admin_orders():
         FROM orders {date_where_sql}
     """
     stats_row = conn.execute(stats_query, date_params).fetchone()
-    
+
     if status in ORDER_STATUSES:
         where_clauses.append("status = ?")
         params.append(status)
-        
+
     where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
     rows = conn.execute(f"SELECT * FROM orders {where_sql} ORDER BY id DESC LIMIT 500", params).fetchall()
-    
+
     data = [order_json(conn, r) for r in rows]
-    
+
     stats = {
         "total_orders": stats_row["total_orders"] if stats_row else 0,
         "total_revenue": stats_row["total_revenue"] if stats_row else 0,
@@ -1207,7 +1478,7 @@ def admin_orders():
         "count_takeaway": stats_row["count_takeaway"] or 0 if stats_row else 0,
         "count_delivery": stats_row["count_delivery"] or 0 if stats_row else 0
     }
-    
+
     conn.close()
     return jsonify(orders=data, stats=stats, date_filter=date_filter)
 
@@ -1220,6 +1491,16 @@ def update_order(order_id):
 
     if status not in ORDER_STATUSES:
         return jsonify(error="Invalid order status"), 400
+
+    if supabase_client.is_supabase_configured():
+        try:
+            out = supabase_client.update_order_status(order_id, status)
+            if out:
+                broadcast_admin_event("order_status_updated", {"order_id": order_id, "order": out})
+                logger.info(f"Supabase Order {out.get('order_code', order_id)} status updated to: {status}")
+                return jsonify(order=out)
+        except Exception as e:
+            logger.error(f"Supabase update_order error: {e}. Falling back to SQLite.")
 
     conn = db()
     cur = conn.execute(
@@ -1246,6 +1527,25 @@ def update_order(order_id):
 @app.get("/api/admin/backup/export")
 @admin_required
 def export_backup():
+    if supabase_client.is_supabase_configured():
+        menu_items = supabase_client.get_menu()
+        settings_dict = supabase_client.get_settings()
+        orders_data, _ = supabase_client.get_orders("all")
+        data = {
+            "version": "1.1",
+            "backed_up_at": datetime.now().isoformat(),
+            "source": "supabase",
+            "orders": orders_data,
+            "menu_items": menu_items,
+            "settings": settings_dict
+        }
+        filename = f"qissa_supabase_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        return Response(
+            json.dumps(data, indent=2, ensure_ascii=False),
+            mimetype="application/json",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+
     backup_data_to_disk()
     backup_file = ORDERS_BACKUP_PATH if ORDERS_BACKUP_PATH.exists() else REPO_BACKUP_PATH
     if not backup_file or not backup_file.exists():
@@ -1282,9 +1582,59 @@ def import_backup():
     if not data or not isinstance(data, dict):
         return jsonify(error="Please provide a valid JSON backup file or payload."), 400
 
+    if supabase_client.is_supabase_configured():
+        client = supabase_client.get_client()
+        if not client:
+            return jsonify(error="Supabase not reachable"), 500
+
+        # Import settings
+        settings_data = data.get("settings", {})
+        if settings_data:
+            supabase_client.update_settings(settings_data)
+
+        # Import menu
+        menu_data = data.get("menu_items", [])
+        if menu_data:
+            client.table("menu_items").upsert(menu_data, on_conflict="id").execute()
+
+        # Import orders
+        orders_data = data.get("orders", [])
+        for o in orders_data:
+            code = o.get("order_code")
+            if not code:
+                continue
+            chk = client.table("orders").select("id").eq("order_code", code).limit(1).execute()
+            if not chk.data:
+                res = client.table("orders").insert({
+                    "order_code": code,
+                    "customer_name": o.get("customer_name", "Customer"),
+                    "phone": o.get("phone", ""),
+                    "order_type": o.get("order_type", "Takeaway"),
+                    "table_number": o.get("table_number", ""),
+                    "delivery_address": o.get("delivery_address", ""),
+                    "notes": o.get("notes", ""),
+                    "total": o.get("total", 0),
+                    "status": o.get("status", "completed"),
+                    "created_at": o.get("created_at"),
+                    "updated_at": o.get("updated_at")
+                }).execute()
+                if res.data:
+                    new_oid = res.data[0]["id"]
+                    items_payload = [{
+                        "order_id": new_oid,
+                        "menu_item_id": it.get("menu_item_id"),
+                        "item_name": it.get("item_name", "Item"),
+                        "unit_price": it.get("unit_price", 0),
+                        "qty": it.get("qty", 1),
+                        "line_total": it.get("line_total", 0)
+                    } for it in o.get("items", [])]
+                    if items_payload:
+                        client.table("order_items").insert(items_payload).execute()
+
+        return jsonify(ok=True, message="Backup imported into Supabase successfully.")
+
     conn = db()
     try:
-        # Save to backup file
         for path in [ORDERS_BACKUP_PATH, REPO_BACKUP_PATH]:
             try:
                 temp_file = path.with_suffix(".import_tmp")
@@ -1302,6 +1652,139 @@ def import_backup():
         conn.close()
         logger.error(f"Import backup failed: {e}")
         return jsonify(error=f"Import failed: {e}"), 500
+
+
+@app.get("/api/admin/orders/export-csv")
+@admin_required
+def export_orders_csv():
+    import csv
+    import io
+    from datetime import timedelta
+
+    range_param = request.args.get("range", "all").strip().lower()
+    custom_date = request.args.get("date", "").strip()
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
+    orders = []
+    items_by_order = {}
+
+    if supabase_client.is_supabase_configured():
+        client = supabase_client.get_client()
+        q = client.table("orders").select("*")
+        if custom_date:
+            q = q.gte("created_at", f"{custom_date}T00:00:00").lte("created_at", f"{custom_date}T23:59:59")
+        elif range_param == "today":
+            q = q.gte("created_at", f"{today_str}T00:00:00")
+        elif range_param == "yesterday":
+            yest_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+            q = q.gte("created_at", f"{yest_str}T00:00:00").lte("created_at", f"{yest_str}T23:59:59")
+        elif range_param == "7days":
+            start_str = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+            q = q.gte("created_at", f"{start_str}T00:00:00")
+        elif range_param == "month":
+            month_str = datetime.now().strftime("%Y-%m")
+            q = q.gte("created_at", f"{month_str}-01T00:00:00")
+
+        res = q.order("id", desc=True).execute()
+        orders = res.data or []
+
+        if orders:
+            order_ids = [o["id"] for o in orders]
+            items_res = client.table("order_items").select("*").in_("order_id", order_ids[:200]).execute()
+            for it in (items_res.data or []):
+                items_by_order.setdefault(it["order_id"], []).append(it)
+    else:
+        conn = db()
+        query = "SELECT * FROM orders"
+        params = []
+
+        if custom_date:
+            query += " WHERE substr(created_at, 1, 10) = ?"
+            params.append(custom_date)
+        elif range_param == "today":
+            query += " WHERE substr(created_at, 1, 10) = ?"
+            params.append(today_str)
+        elif range_param == "yesterday":
+            yest_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+            query += " WHERE substr(created_at, 1, 10) = ?"
+            params.append(yest_str)
+        elif range_param == "7days":
+            start_str = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+            query += " WHERE substr(created_at, 1, 10) >= ?"
+            params.append(start_str)
+        elif range_param == "month":
+            month_str = datetime.now().strftime("%Y-%m")
+            query += " WHERE substr(created_at, 1, 7) = ?"
+            params.append(month_str)
+
+        query += " ORDER BY id DESC"
+        orders = conn.execute(query, params).fetchall()
+
+        items_rows = conn.execute("SELECT * FROM order_items ORDER BY order_id, id").fetchall()
+        conn.close()
+
+        for it in items_rows:
+            items_by_order.setdefault(it["order_id"], []).append(it)
+
+    output = io.StringIO()
+    output.write("\ufeff")  # UTF-8 BOM for Microsoft Excel compatibility
+    writer = csv.writer(output)
+
+    writer.writerow([
+        "Order Code",
+        "Date",
+        "Time",
+        "Customer Name",
+        "Phone",
+        "Order Type",
+        "Table / Delivery Address",
+        "Items & Customizations",
+        "Special Instructions",
+        "Status",
+        "Total (Rs)"
+    ])
+
+    for o in orders:
+        created_raw = str(o["created_at"] or "")
+        date_part = created_raw[:10] if len(created_raw) >= 10 else ""
+        time_part = created_raw[11:19] if len(created_raw) >= 19 else ""
+
+        table_or_addr = ""
+        o_type = o["order_type"] or ""
+        if o_type == "Dine-in":
+            table_or_addr = f"Table {o['table_number']}" if o.get("table_number") else "Dine-in"
+        elif o_type == "Delivery":
+            table_or_addr = o.get("delivery_address") or ""
+        else:
+            table_or_addr = "Takeaway"
+
+        o_items = items_by_order.get(o["id"], [])
+        items_str = "; ".join([f"{it['item_name']} x {it['qty']} (Rs.{it['line_total']})" for it in o_items])
+
+        writer.writerow([
+            o.get("order_code") or f"Q{o['id']:06d}",
+            date_part,
+            time_part,
+            o.get("customer_name", ""),
+            o.get("phone", ""),
+            o_type,
+            table_or_addr,
+            items_str,
+            o.get("notes") or "",
+            (o.get("status") or "new").capitalize(),
+            o.get("total", 0)
+        ])
+
+    csv_data = output.getvalue()
+    filename = f"qissa_sales_report_{range_param}_{today_str}.csv"
+    return Response(
+        csv_data,
+        mimetype="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}",
+            "Cache-Control": "no-cache, no-store, must-revalidate"
+        }
+    )
 
 
 @app.errorhandler(404)
@@ -1322,7 +1805,12 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", "5000"))
     debug = os.getenv("FLASK_DEBUG", "1") == "1"
 
-    logger.info(f"\nQissa Cafe is running at http://127.0.0.1:{port}")
+    if supabase_client.is_supabase_configured():
+        logger.info("🟢 Database Mode: Supabase Cloud PostgreSQL + Supabase Storage CDN")
+    else:
+        logger.info("🟡 Database Mode: Local SQLite Fallback (qissa.db)")
+
+    logger.info(f"Qissa Cafe is running at http://127.0.0.1:{port}")
     logger.info(f"Admin dashboard: http://127.0.0.1:{port}/admin")
     logger.info(f"Debug mode: {debug}\n")
 

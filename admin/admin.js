@@ -840,6 +840,16 @@ window.updateOrderStatus = async (id, status) => {
 };
 
 $("#refreshOrders")?.addEventListener('click', loadOrders);
+$("#exportOrdersCsvBtn")?.addEventListener('click', () => {
+  let exportUrl = `/api/admin/orders/export-csv?`;
+  if (["today", "yesterday", "7days", "all", "month"].includes(currentDateFilter)) {
+    exportUrl += `range=${encodeURIComponent(currentDateFilter)}`;
+  } else {
+    exportUrl += `date=${encodeURIComponent(currentDateFilter)}`;
+  }
+  window.location.href = exportUrl;
+  toast("Downloading CSV report...");
+});
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {

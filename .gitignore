@@ -4,6 +4,7 @@ __pycache__/
 *.log
 backend/qissa.log
 backend/.env
+backend/orders_backup.json
 .venv/
 env/
 venv/

@@ -31,5 +31,5 @@ EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:5000/api/status || exit 1
 
-# Run with Gunicorn using gevent/threads for real-time SSE support
-CMD ["gunicorn", "--chdir", "backend", "wsgi:app", "--bind", "0.0.0.0:5000", "--workers", "1", "--threads", "8", "--timeout", "120"]
+# Run with Gunicorn using threads for real-time SSE support
+CMD ["sh", "-c", "gunicorn -w 1 --threads 8 --timeout 120 -b 0.0.0.0:${PORT:-5000} backend.app:app"]

@@ -3,9 +3,19 @@ services:
     name: qissacafe
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn -w 1 --threads 8 --timeout 120 -b 0.0.0.0: backend.app:app
+    startCommand: gunicorn -w 1 --threads 8 --timeout 120 -b 0.0.0.0:$PORT backend.app:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.11.10
       - key: FLASK_DEBUG
         value: 0
+      - key: QISSA_COOKIE_SECURE
+        value: 1
+      - key: QISSA_SECRET_KEY
+        generateValue: true
+      - key: QISSA_ADMIN_PASSWORD
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

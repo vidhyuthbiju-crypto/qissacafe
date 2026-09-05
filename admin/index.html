@@ -106,10 +106,13 @@
           <button class="tab-btn" data-status="cancelled">❌ Cancelled</button>
         </div>
 
-        <!-- Search & Refresh -->
+        <!-- Search & Refresh & Export -->
         <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
           <input id="orderSearch" placeholder="🔍 Search order code, customer name, phone, table..." style="flex:1 1 300px;min-width:0">
-          <button class="soft" id="refreshOrders">🔄 Refresh</button>
+          <div style="display:flex;gap:8px">
+            <button class="soft" id="exportOrdersCsvBtn" title="Export orders to CSV / Excel for accounting">📊 Export CSV</button>
+            <button class="soft" id="refreshOrders">🔄 Refresh</button>
+          </div>
         </div>
       </div>
       <div class="orders-grid" id="ordersGrid"></div>
@@ -134,7 +137,9 @@
             All customer orders, daily sales, and settings are <strong>automatically persisted</strong> to disk on every change and auto-restored upon program updates. You can also export a copy to your computer or import past records anytime.
           </p>
           <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <a href="/api/admin/backup/export" class="primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">💾 Download Backup (JSON)</a>
+            <a href="/api/admin/orders/export-csv?range=month" class="primary" id="downloadMonthlyCsvBtn" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">📊 Download Monthly Sales (CSV)</a>
+            <a href="/api/admin/orders/export-csv?range=all" class="soft" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">📑 All History (CSV)</a>
+            <a href="/api/admin/backup/export" class="soft" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px">💾 Full Backup (JSON)</a>
             <label class="soft" style="cursor:pointer;display:inline-flex;align-items:center;gap:6px">
               📥 Restore / Import Backup
               <input type="file" id="importBackupFile" accept=".json,application/json" hidden>
