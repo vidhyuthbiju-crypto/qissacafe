@@ -1,0 +1,8 @@
+﻿User-agent: *
+Allow: /
+Allow: /assets/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/admin/
+
+Sitemap: https://qissacafe.onrender.com/sitemap.xml

@@ -2,3 +2,5 @@
 qissa.db
 __pycache__/
 *.pyc
+backups/
+orders_backup.json

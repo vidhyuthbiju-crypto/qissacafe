@@ -494,6 +494,7 @@ function closeOverlays() {
   cartDrawer.classList.remove("open");
   checkoutModal.classList.remove("show");
   if ($("#orderTrackingModal")) $("#orderTrackingModal").classList.remove("show");
+  if ($("#ordersHistoryModal")) $("#ordersHistoryModal").classList.remove("show");
   if (trackingPollTimer) {
     clearInterval(trackingPollTimer);
     trackingPollTimer = null;
@@ -550,11 +551,7 @@ async function openCheckout() {
   cartDrawer.classList.remove("open");
   renderCheckoutSummary();
 
-  const savedName = localStorage.getItem("qissaCustomerName") || "";
-  const savedPhone = localStorage.getItem("qissaCustomerPhone") || "";
-  if (savedName && $("#customerName")) $("#customerName").value = savedName;
-  if (savedPhone && $("#customerPhone")) $("#customerPhone").value = savedPhone;
-
+  populateSavedCustomer();
   setOrderType($("#orderType")?.value || "Delivery");
 
   checkoutModal.classList.add("show");
@@ -618,6 +615,26 @@ $("#closeCheckout").addEventListener("click", closeOverlays);
 $("#checkoutBtn").addEventListener("click", openCheckout);
 backdrop.addEventListener("click", closeOverlays);
 $("#menuSearch").addEventListener("input", e => debouncedSearch(e.target.value));
+
+$("#ordersBtn")?.addEventListener("click", openOrderHistoryModal);
+$("#mobileOrdersLink")?.addEventListener("click", (e) => { e.preventDefault(); openOrderHistoryModal(); });
+$("#footerOrdersLink")?.addEventListener("click", (e) => { e.preventDefault(); openOrderHistoryModal(); });
+$("#closeOrdersHistory")?.addEventListener("click", closeOverlays);
+$("#clearOrdersHistoryBtn")?.addEventListener("click", () => {
+  if (confirm("Clear your order history from this browser?")) {
+    localStorage.removeItem("qissaOrderHistory");
+    renderOrderHistory();
+    showToast("Order history cleared", "ℹ️");
+  }
+});
+$("#historyExploreMenuBtn")?.addEventListener("click", () => {
+  closeOverlays();
+  setPage("menu");
+});
+
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeOverlays();
+});
 
 // Order Type Tabs switching
 function setOrderType(type) {
@@ -1100,6 +1117,31 @@ $("#checkoutForm").addEventListener("submit", async (e) => {
 
     localStorage.setItem("qissaCustomerName", name);
     if (phone) localStorage.setItem("qissaCustomerPhone", phone);
+
+    // Save address if delivery and saveAddressCheckbox checked
+    const saveAddrCheckbox = $("#saveAddressCheckbox");
+    if (orderType === "Delivery" && (!saveAddrCheckbox || saveAddrCheckbox.checked)) {
+      saveDeliveryAddress(deliveryAddress, landmark);
+    }
+
+    // Save to Order History
+    saveOrderToHistory({
+      ...result,
+      customer_name: name,
+      phone: effectivePhone,
+      order_type: orderType,
+      table_number: tableNumber,
+      delivery_address: fullDeliveryAddress,
+      notes: notes,
+      items: state.cart.map(x => ({
+        id: x.id,
+        name: x.name,
+        price: x.price,
+        qty: x.qty,
+        line_total: x.price * x.qty
+      })),
+      total: result.total || state.cart.reduce((s, x) => s + (x.price * x.qty), 0)
+    });
     localStorage.setItem("qissaActiveOrder", JSON.stringify(result));
 
     state.cart = [];
@@ -1110,7 +1152,7 @@ $("#checkoutForm").addEventListener("submit", async (e) => {
 
     $("#checkoutForm").reset();
     clearAllErrors();
-    setOrderType("Dine-in");
+    setOrderType(orderType);
     submitBtn.innerHTML = "Place Order";
     submitBtn.disabled = false;
 
@@ -1125,14 +1167,250 @@ $("#checkoutForm").addEventListener("submit", async (e) => {
   }
 });
 
-// Auto-fill customer info on load
+// ==============================================================================
+// SAVED ADDRESSES & CUSTOMER PROFILE
+// ==============================================================================
+function getSavedAddresses() {
+  try {
+    return JSON.parse(localStorage.getItem("qissaAddressesList") || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveDeliveryAddress(address, landmark) {
+  if (!address || !address.trim()) return;
+  const cleanAddr = address.trim();
+  const cleanLandmark = (landmark || "").trim();
+
+  localStorage.setItem("qissaSavedAddress", cleanAddr);
+  if (cleanLandmark) {
+    localStorage.setItem("qissaSavedLandmark", cleanLandmark);
+  }
+
+  const list = getSavedAddresses();
+  const existingIdx = list.findIndex(a => a.address.toLowerCase() === cleanAddr.toLowerCase());
+  if (existingIdx !== -1) {
+    list[existingIdx].landmark = cleanLandmark;
+  } else {
+    list.unshift({
+      id: Date.now(),
+      label: list.length === 0 ? "Home" : (list.length === 1 ? "Work" : "Other"),
+      address: cleanAddr,
+      landmark: cleanLandmark
+    });
+  }
+  localStorage.setItem("qissaAddressesList", JSON.stringify(list.slice(0, 5)));
+}
+
+function renderSavedAddressChips() {
+  const wrap = $("#savedAddressWrap");
+  const chipsContainer = $("#savedAddressChips");
+  if (!wrap || !chipsContainer) return;
+
+  const addresses = getSavedAddresses();
+  if (!addresses.length) {
+    wrap.style.display = "none";
+    return;
+  }
+
+  wrap.style.display = "block";
+  chipsContainer.innerHTML = addresses.map((a, idx) => `
+    <button type="button" class="address-chip ${idx === 0 ? 'active' : ''}" onclick="selectSavedAddress(${idx})">
+      <span>📍 ${escapeHtml(a.label || 'Saved')}: ${escapeHtml(a.address.substring(0, 22))}${a.address.length > 22 ? '...' : ''}</span>
+    </button>
+  `).join("");
+}
+
+function selectSavedAddress(index) {
+  const addresses = getSavedAddresses();
+  const item = addresses[index];
+  if (!item) return;
+
+  if ($("#deliveryAddress")) $("#deliveryAddress").value = item.address;
+  if ($("#deliveryLandmark")) $("#deliveryLandmark").value = item.landmark || "";
+
+  const chips = document.querySelectorAll(".address-chip");
+  chips.forEach((c, idx) => {
+    c.classList.toggle("active", idx === index);
+  });
+}
+window.selectSavedAddress = selectSavedAddress;
+
+// Auto-fill customer info on load & checkout open
 function populateSavedCustomer() {
   const savedName = localStorage.getItem("qissaCustomerName");
   const savedPhone = localStorage.getItem("qissaCustomerPhone");
+  const savedAddress = localStorage.getItem("qissaSavedAddress");
+  const savedLandmark = localStorage.getItem("qissaSavedLandmark");
+
   if (savedName && $("#customerName")) $("#customerName").value = savedName;
   if (savedPhone && $("#customerPhone")) $("#customerPhone").value = savedPhone;
+  if (savedAddress && $("#deliveryAddress") && !$("#deliveryAddress").value) {
+    $("#deliveryAddress").value = savedAddress;
+  }
+  if (savedLandmark && $("#deliveryLandmark") && !$("#deliveryLandmark").value) {
+    $("#deliveryLandmark").value = savedLandmark;
+  }
+  renderSavedAddressChips();
 }
 populateSavedCustomer();
+
+// ==============================================================================
+// CUSTOMER ORDER HISTORY & REORDER
+// ==============================================================================
+function getOrderHistory() {
+  try {
+    return JSON.parse(localStorage.getItem("qissaOrderHistory") || "[]");
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveOrderToHistory(order) {
+  try {
+    const history = getOrderHistory();
+    const code = order.order_code || `Q${order.order_id || order.id || ''}`;
+    const filtered = history.filter(o => (o.order_code || `Q${o.order_id || o.id}`) !== code);
+    filtered.unshift({
+      id: order.id || order.order_id,
+      order_code: code,
+      customer_name: order.customer_name || "",
+      phone: order.phone || "",
+      order_type: order.order_type || "Takeaway",
+      table_number: order.table_number || "",
+      delivery_address: order.delivery_address || "",
+      notes: order.notes || "",
+      total: order.total || 0,
+      status: order.status || "new",
+      created_at: order.created_at || new Date().toISOString(),
+      items: (order.items || []).map(it => ({
+        id: it.id || it.menu_item_id,
+        name: it.name || it.item_name || "Item",
+        price: it.price || it.unit_price || 0,
+        qty: it.qty || 1,
+        line_total: it.line_total || ((it.price || it.unit_price || 0) * (it.qty || 1))
+      }))
+    });
+    localStorage.setItem("qissaOrderHistory", JSON.stringify(filtered.slice(0, 20)));
+  } catch (e) {
+    console.error("Failed to save order to history:", e);
+  }
+}
+
+function renderOrderHistory() {
+  const container = $("#ordersHistoryList");
+  if (!container) return;
+  const history = getOrderHistory();
+  if (!history.length) {
+    container.innerHTML = `
+      <div class="history-empty">
+        <span class="history-empty-icon">🍽️</span>
+        <strong style="color:var(--green);font-size:1.1rem">No orders placed yet</strong>
+        <p style="margin:0;font-size:0.88rem">Your completed and active orders will appear here for fast reordering and live tracking.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = history.map(order => {
+    const code = order.order_code || `Q${order.id || ''}`;
+    const dateStr = order.created_at ? new Date(order.created_at).toLocaleDateString(undefined, {
+      month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    }) : 'Recent';
+    const itemsSummary = (order.items || []).map(it => `${escapeHtml(it.name)} × ${it.qty}`).join(", ");
+    const typeLabel = order.order_type === "Delivery" ? "🛵 Delivery" : (order.order_type === "Dine-in" ? `🍽️ Table ${order.table_number || ''}` : "🥡 Pickup");
+
+    return `
+      <div class="history-order-card" data-order-code="${escapeHtml(code)}">
+        <div class="history-card-top">
+          <div>
+            <span class="history-code">#${escapeHtml(code)}</span>
+            <span class="history-type-badge">${escapeHtml(typeLabel)}</span>
+          </div>
+          <span class="history-date">${escapeHtml(dateStr)}</span>
+        </div>
+        <div class="history-items">
+          ${itemsSummary || 'Custom order'}
+        </div>
+        <div class="history-card-bottom">
+          <span class="history-total">${money(order.total)}</span>
+          <div class="history-actions">
+            <button type="button" class="history-track-btn" onclick="openOrderFromHistory('${escapeHtml(code)}')">
+              <span>📍 Track</span>
+            </button>
+            <button type="button" class="history-reorder-btn" onclick="reorderPastOrder('${escapeHtml(code)}')">
+              <span>🔄 Reorder</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function openOrderHistoryModal() {
+  closeOverlays();
+  renderOrderHistory();
+  const modal = $("#ordersHistoryModal");
+  if (modal) {
+    modal.classList.add("show");
+    backdrop.classList.add("show");
+    document.body.classList.add("no-scroll");
+  }
+}
+
+function openOrderFromHistory(orderCode) {
+  const history = getOrderHistory();
+  const order = history.find(o => (o.order_code || `Q${o.id}`) === orderCode);
+  if (order) {
+    closeOverlays();
+    openOrderTracking(order);
+  } else {
+    showToast("Order details not found", "!");
+  }
+}
+window.openOrderFromHistory = openOrderFromHistory;
+
+function reorderPastOrder(orderCode) {
+  const history = getOrderHistory();
+  const order = history.find(o => (o.order_code || `Q${o.id}`) === orderCode);
+  if (!order || !order.items || !order.items.length) {
+    showToast("Unable to reorder items from this order", "!");
+    return;
+  }
+
+  let readdedCount = 0;
+  order.items.forEach(it => {
+    const existing = state.menu.find(m => m.id === (it.id || it.menu_item_id) || m.name.toLowerCase() === (it.name || '').toLowerCase());
+    const targetId = existing ? existing.id : (it.id || it.menu_item_id);
+    const targetName = existing ? existing.name : it.name;
+    const targetPrice = existing ? existing.price : it.price;
+    const targetImg = existing ? existing.image : '';
+
+    const cartItem = state.cart.find(c => c.id === targetId);
+    if (cartItem) {
+      cartItem.qty += (it.qty || 1);
+    } else {
+      state.cart.push({
+        id: targetId,
+        name: targetName,
+        price: targetPrice,
+        image: targetImg,
+        qty: it.qty || 1
+      });
+    }
+    readdedCount += (it.qty || 1);
+  });
+
+  saveCart();
+  renderCart();
+  updateMobileBar();
+  closeOverlays();
+  openCart();
+  showToast(`🛒 ${readdedCount} items added to your cart!`, "✓", 2500);
+}
+window.reorderPastOrder = reorderPastOrder;
 
 // Network status monitoring
 window.addEventListener('online', () => {

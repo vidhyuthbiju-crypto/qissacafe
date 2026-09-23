@@ -31,7 +31,9 @@ The project includes a ready-to-go [`Procfile`](file:///c:/Users/VIDHU/Desktop/m
    * `QISSA_ADMIN_PASSWORD`: *(your chosen private admin password)*
    * `FLASK_DEBUG`: `0`
    * `QISSA_COOKIE_SECURE`: `1`
-6. *(Optional)* Add a **Persistent Disk** mounted at `/app/backend` (or use PostgreSQL) so `qissa.db` and uploaded menu images persist across deployments.
+6. **Persistent Data & Cloud Storage**:
+   * **Supabase Cloud (Recommended & Free)**: If your Supabase project was paused due to inactivity, wake it up in the Supabase Dashboard (or create a new free project at [supabase.com](https://supabase.com)). Copy your Project URL & `service_role` key into Render's Environment Variables (`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`). The app auto-detects cloud connectivity and seamlessly synchronizes your menu and orders!
+   * **Render Persistent Disk**: If using SQLite directly on Render, add a **Persistent Disk** named `qissa-data` mounted at `/var/data` (1 GB) to keep `qissa.db`, menu uploads, and rotated snapshots safe across redeploys.
 7. Click **Create Web Service**.
 
 ---

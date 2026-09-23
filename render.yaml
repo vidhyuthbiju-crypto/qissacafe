@@ -19,3 +19,7 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+    disk:
+      name: qissa-data
+      mountPath: /var/data
+      sizeGB: 1

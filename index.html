@@ -5,18 +5,92 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Qissa Cafe"/>
 <meta name="format-detection" content="telephone=no"/>
 <meta name="theme-color" content="#2C4E2B"/>
 <meta name="description" content="Qissa Resto Cafe, Nilambur Road — 100% Free Home Delivery on authentic Rumali Shawarma, crispy Broast, smash burgers, craft shakes and mojitos."/>
+<link rel="canonical" href="https://qissacafe.onrender.com/"/>
+<link rel="icon" type="image/jpeg" href="assets/qissa-logo.jpeg"/>
+<link rel="shortcut icon" href="assets/qissa-logo.jpeg"/>
+<link rel="apple-touch-icon" href="assets/qissa-logo.jpeg"/>
+
 <meta property="og:title" content="Qissa Cafe — Every Bite Has a Story"/>
 <meta property="og:description" content="100% Free Delivery on authentic Shawarma, Broast, Burgers & Mojitos. Order online from Qissa Resto Cafe, Nilambur Road."/>
-<meta property="og:image" content="assets/qissa-logo.jpeg"/>
+<meta property="og:image" content="https://qissacafe.onrender.com/assets/qissa-logo.jpeg"/>
 <meta property="og:type" content="restaurant"/>
+<meta property="og:url" content="https://qissacafe.onrender.com/"/>
+
 <title>Qissa Cafe — Every Bite Has a Story</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=22.0"/>
+<link rel="stylesheet" href="styles.css?v=23.0"/>
+
+<!-- Schema.org JSON-LD Structured Data for Google Search & Local SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "Qissa Resto Cafe",
+  "image": "https://qissacafe.onrender.com/assets/qissa-logo.jpeg",
+  "@id": "https://qissacafe.onrender.com/#restaurant",
+  "url": "https://qissacafe.onrender.com/",
+  "telephone": "+919645700585",
+  "priceRange": "₹₹",
+  "servesCuisine": [
+    "Middle Eastern",
+    "Shawarma",
+    "Broast Chicken",
+    "Burgers",
+    "Mojitos",
+    "Shakes",
+    "Falooda"
+  ],
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Nilambur Road",
+    "addressLocality": "Nilambur",
+    "addressRegion": "Kerala",
+    "postalCode": "679329",
+    "addressCountry": "IN"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 11.1116412,
+    "longitude": 76.2789462
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "opens": "12:00",
+      "closes": "23:30"
+    }
+  ],
+  "hasMenu": "https://qissacafe.onrender.com/#menu",
+  "potentialAction": {
+    "@type": "OrderAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://qissacafe.onrender.com/#menu",
+      "inLanguage": "en",
+      "actionPlatform": [
+        "http://schema.org/DesktopWebPlatform",
+        "http://schema.org/MobileWebPlatform"
+      ]
+    },
+    "deliveryMethod": "http://purl.org/goodrelations/v1#DeliveryModeOwnFleet"
+  }
+}
+</script>
 </head>
 <body>
 <div class="grain"></div><div class="cursor-glow" id="cursorGlow"></div>
@@ -30,10 +104,11 @@
 <a href="#" class="brand" data-page="home"><img src="assets/qissa-logo.jpeg" alt="Qissa"/><div><strong>QISSA</strong><span>RESTO CAFE</span></div></a>
 <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-expanded="false" aria-label="Toggle menu"><span></span><span></span><span></span></button>
 <div class="nav-links" id="navLinks">
-<a href="#" data-page="home" class="active">Home</a><a href="#" data-page="menu">Menu</a><a href="#" data-page="story">Our Story</a><a href="#" data-page="visit">Visit</a>
+<a href="#" data-page="home" class="active">Home</a><a href="#" data-page="menu">Menu</a><a href="#" data-page="story">Our Story</a><a href="#" data-page="visit">Visit</a><a href="#" id="mobileOrdersLink" class="mobile-only-link">My Orders 📋</a>
 </div>
 <div class="nav-actions">
   <button class="ghost-btn" id="searchBtn">Search 🔍</button>
+  <button class="ghost-btn" id="ordersBtn" title="View Past Orders">Orders 📋</button>
   <button class="cart-btn" id="cartBtn">Cart <span id="cartCount">0</span></button>
 </div>
 </nav></header>
@@ -255,7 +330,7 @@
 </div>
 </section>
 </main>
-<footer><div class="container footer-inner"><div class="brand footer-brand"><img src="assets/qissa-logo.jpeg" alt="Qissa"/><div><strong>QISSA</strong><span>RESTO CAFE</span></div></div><div class="footer-center"><p>&copy; 2026 Qissa Cafe. Every bite has a story.</p><p class="creator-credit">Designed &amp; Developed by <strong>vidhucreatives</strong></p></div><div class="footer-links"><a href="/admin">Admin</a><a href="#" data-page="home">Back to home &uarr;</a></div></div></footer>
+<footer><div class="container footer-inner"><div class="brand footer-brand"><img src="assets/qissa-logo.jpeg" alt="Qissa"/><div><strong>QISSA</strong><span>RESTO CAFE</span></div></div><div class="footer-center"><p>&copy; 2026 Qissa Cafe. Every bite has a story.</p><p class="creator-credit">Designed &amp; Developed by <strong>vidhucreatives</strong></p></div><div class="footer-links"><a href="#" id="footerOrdersLink">My Orders</a><a href="/admin">Admin</a><a href="#" data-page="home">Back to home &uarr;</a></div></div></footer>
 <aside class="cart-drawer" id="cartDrawer"><div class="drawer-head"><div><span class="kicker">YOUR ORDER</span><h3>Qissa Cart</h3></div><button class="icon-btn" id="closeCart">&times;</button></div><div class="cart-items" id="cartItems"></div><div class="cart-footer">
   <div class="delivery-perk-badge">
     <span>🛵 Delivery Fee</span>
@@ -306,6 +381,10 @@
 
     <!-- Delivery Specific -->
     <div id="deliveryFields" style="display:block">
+      <div class="saved-address-wrap" id="savedAddressWrap" style="display:none">
+        <label style="font-size:0.8rem;color:var(--muted);font-weight:700">Saved Addresses:</label>
+        <div class="saved-address-chips" id="savedAddressChips"></div>
+      </div>
       <div class="input-wrap" id="wrap-deliveryAddress">
         <label>Delivery Address *<textarea id="deliveryAddress" rows="2" placeholder="House / Flat / Building / Street address"></textarea></label>
         <div class="field-error-msg" id="err-deliveryAddress" style="display:none"></div>
@@ -313,6 +392,10 @@
       <div class="input-wrap">
         <label>Landmark <small style="color:var(--muted);font-weight:normal">(Optional)</small><input id="deliveryLandmark" placeholder="Near mosque, school, pump, etc."/></label>
       </div>
+      <label class="checkbox-wrap">
+        <input type="checkbox" id="saveAddressCheckbox" checked/>
+        <span>Save this address for fast checkout next time</span>
+      </label>
     </div>
 
     <!-- Optional Special Instructions for all -->
@@ -395,6 +478,27 @@
     </div>
   </div>
 </div>
+
+<!-- Past Orders & History Modal -->
+<div class="orders-history-modal" id="ordersHistoryModal">
+  <div class="orders-history-card">
+    <div class="orders-history-header">
+      <div>
+        <span class="kicker">YOUR HISTORY</span>
+        <h2>My Past Orders</h2>
+      </div>
+      <button class="icon-btn orders-history-close" id="closeOrdersHistory" aria-label="Close history modal">&times;</button>
+    </div>
+    <div class="orders-history-list" id="ordersHistoryList">
+      <!-- Populated via app.js -->
+    </div>
+    <div class="orders-history-footer">
+      <button type="button" class="soft-btn" id="clearOrdersHistoryBtn" style="font-size:0.78rem;padding:7px 12px;border:none;border-radius:10px;cursor:pointer;background:rgba(0,0,0,0.06);color:var(--muted)">Clear History</button>
+      <button type="button" class="primary-btn" id="historyExploreMenuBtn" style="padding:8px 16px;font-size:0.85rem">Explore Menu &rarr;</button>
+    </div>
+  </div>
+</div>
+
 <iframe id="customerReceiptFrame" style="position:fixed;width:0;height:0;border:0;visibility:hidden;"></iframe>
 
 <div class="mobile-cart-bar" id="mobileCartBar" style="display:none">
@@ -411,6 +515,6 @@
   </button>
 </div>
 <div class="toast" id="toast"><span class="toast-icon" id="toastIcon">&#10003;</span><span id="toastText">Added to cart</span></div>
-<script src="app.js?v=21.0"></script>
+<script src="app.js?v=23.0"></script>
 </body>
 </html>

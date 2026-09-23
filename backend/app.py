@@ -201,13 +201,29 @@ def _run_backup_worker():
                     temp_file.replace(path)
                 except Exception:
                     pass
+
+            # Timestamped snapshot rotation (keep last 10 snapshots)
+            try:
+                backups_dir = DATA_DIR / "backups"
+                backups_dir.mkdir(parents=True, exist_ok=True)
+                snapshot_file = backups_dir / f"snapshot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                with open(snapshot_file, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2, ensure_ascii=False)
+                existing_snaps = sorted(backups_dir.glob("snapshot_*.json"))
+                if len(existing_snaps) > 10:
+                    for old_snap in existing_snaps[:-10]:
+                        try:
+                            old_snap.unlink()
+                        except Exception:
+                            pass
+            except Exception as snap_err:
+                logger.warning(f"Snapshot rotation notice: {snap_err}")
+
             logger.info(f"Async backup complete: {len(orders_rows)} orders and {len(menu_rows)} menu items persisted to storage")
         except Exception as e:
             logger.error(f"Error during async backup: {e}")
 
 def schedule_background_backup():
-    if supabase_client.is_supabase_configured():
-        return
     t = threading.Thread(target=_run_backup_worker, daemon=True)
     t.start()
 
@@ -645,6 +661,21 @@ def styles():
 @app.get("/app.js")
 def customer_js():
     return send_from_directory(PROJECT_DIR, "app.js")
+
+
+@app.get("/robots.txt")
+def robots_txt():
+    return send_from_directory(PROJECT_DIR, "robots.txt", mimetype="text/plain")
+
+
+@app.get("/sitemap.xml")
+def sitemap_xml():
+    return send_from_directory(PROJECT_DIR, "sitemap.xml", mimetype="application/xml")
+
+
+@app.get("/favicon.ico")
+def favicon():
+    return send_from_directory(PROJECT_DIR / "assets", "qissa-logo.jpeg", mimetype="image/jpeg")
 
 
 @app.get("/assets/<path:filename>")

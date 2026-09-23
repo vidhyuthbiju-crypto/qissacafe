@@ -16,9 +16,16 @@ logger = logging.getLogger("qissa.supabase")
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env", override=True)
 
-_client = None
+import socket
+import time
+from urllib.parse import urlparse
 
+_client = None
 _supabase_import_attempted = False
+_last_connectivity_check = 0.0
+_is_connected = False
+CONNECTIVITY_CHECK_INTERVAL = 60.0  # seconds cooldown
+
 
 def get_supabase_config() -> Tuple[Optional[str], Optional[str]]:
     """Get Supabase URL and Key from environment."""
@@ -39,10 +46,41 @@ def has_supabase_credentials() -> bool:
     return True
 
 
+def is_supabase_reachable() -> bool:
+    """Check if Supabase host is resolvable via DNS and reachable, cached for 60s."""
+    global _last_connectivity_check, _is_connected
+    now = time.time()
+    if now - _last_connectivity_check < CONNECTIVITY_CHECK_INTERVAL:
+        return _is_connected
+
+    url, _ = get_supabase_config()
+    if not url:
+        _is_connected = False
+        _last_connectivity_check = now
+        return False
+
+    try:
+        parsed = urlparse(url)
+        hostname = parsed.hostname
+        if not hostname:
+            _is_connected = False
+            _last_connectivity_check = now
+            return False
+        # Fast DNS check to verify host exists and is not paused/deleted
+        socket.gethostbyname(hostname)
+        _is_connected = True
+    except Exception as e:
+        logger.warning(f"Supabase host '{url}' is unreachable ({e}). Gracefully falling back to local SQLite.")
+        _is_connected = False
+
+    _last_connectivity_check = now
+    return _is_connected
+
+
 def get_client():
     """Get or initialize the Supabase client instance."""
     global _client, _supabase_import_attempted
-    if not has_supabase_credentials():
+    if not has_supabase_credentials() or not is_supabase_reachable():
         return None
 
     if _client is None and not _supabase_import_attempted:
@@ -52,7 +90,7 @@ def get_client():
             _client = create_client(
                 supabase_url=url,
                 supabase_key=key,
-                options=ClientOptions(postgrest_client_timeout=15, storage_client_timeout=30)
+                options=ClientOptions(postgrest_client_timeout=10, storage_client_timeout=20)
             )
             logger.info("Supabase client successfully initialized.")
         except ImportError:
@@ -68,8 +106,10 @@ def get_client():
 
 
 def is_supabase_configured() -> bool:
-    """Returns True ONLY if valid Supabase credentials exist AND client is successfully initialized."""
+    """Returns True ONLY if valid Supabase credentials exist, host is reachable, AND client is successfully initialized."""
     if not has_supabase_credentials():
+        return False
+    if not is_supabase_reachable():
         return False
     try:
         return get_client() is not None
